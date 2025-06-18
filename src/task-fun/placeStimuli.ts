@@ -1,38 +1,41 @@
 import { GridCell, selectAndOccupyCell, radius } from './createGrid';
 import { Stimulus } from './createStimuli';
 
-export function placeAndGenerateStimuli(grid: GridCell[], numCircles: number, cellWidth: number, cellHeight: number, side: 'left' | 'right' | 'both', stimulusType: 'colored_circle' | 'oriented_circle'): Stimulus[] {
+/** Which basic shapes we support */
+export type StimulusKind = 'colored_circle' | 'oriented_circle';
+
+/** Declarative request: “give me N items of KIND on SIDE” */
+export interface StimulusSpec {
+    count: number;
+    side: 'left' | 'right';
+    stimulusType: StimulusKind;
+  }
+
+  
+/** Low-level workhorse: executes an array of StimulusSpec objects */
+export function generateStimuli (
+    grid: GridCell[],
+    specs: StimulusSpec[],
+    cellWidth: number,
+    cellHeight: number,
+  ): Stimulus[] {    
+    
     const stimuli: Stimulus[] = [];
 
-    if (numCircles === 6 && side === 'both') {
-        for (let i = 0; i < 3; i++) {
-            let cell = selectAndOccupyCell(grid, 'left');
-            if (cell) {
-                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
-                stimuli.push(...newStimuli);
-            }
+    for (const { count, side, stimulusType } of specs) {
+      for (let i = 0; i < count; i++) {
+        const cell = selectAndOccupyCell(grid, side);
+        if (cell) {
+          stimuli.push(
+            ...createStimulus(cell, cellWidth, cellHeight, stimulusType),
+          );
         }
-        for (let i = 0; i < 3; i++) {
-            let cell = selectAndOccupyCell(grid, 'right');
-            if (cell) {
-                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
-                stimuli.push(...newStimuli);
-            }
-        }
-    } else {
-        for (let i = 0; i < numCircles; i++) {
-            let cell = selectAndOccupyCell(grid, side);
-            if (cell) {
-                const newStimuli = createStimulus(cell, cellWidth, cellHeight, stimulusType);
-                stimuli.push(...newStimuli);
-            }
-        }
+      }
     }
-
     return stimuli;
-}
+  }
 
-
+/** * Creates a stimulus based on the provided cell, cell dimensions, and stimulus type. */
 function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, stimulusType: 'colored_circle' | 'oriented_circle'): Stimulus[] {
     const color = randomColor();
     const stimuli: Stimulus[] = [];

@@ -21,8 +21,8 @@ export function filterAndMapStimuli(stimuli_array: Stimulus[]): (LineStimulus | 
                     obj_type: 'circle',
                     startX: stim.startX,
                     startY: stim.startY,
-                    line_color: stim.line_color, // Optional
-                    fill_color: stim.fill_color, // Optional
+                    line_color: stim.line_color, 
+                    fill_color: stim.fill_color, 
                     radius: stim.radius,
                     line_width: stim.line_width,
                 };
