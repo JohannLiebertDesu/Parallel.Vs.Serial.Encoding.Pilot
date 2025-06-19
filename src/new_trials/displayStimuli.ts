@@ -9,6 +9,8 @@ import {
 } from "../task-fun/createGrid";
 import { jsPsych } from "../jsp";
 import { filterAndMapStimuli } from "../task-fun/filterStimuli";
+import { Stimulus } from "../task-fun/createStimuli";
+import { assignTestStatus } from "../task-fun/assignTestStatus";
 
 // We only need the grid to place the stimuli, so we can create it once and reuse it.
 const GRID = createGrid(numColumns, numRows);
@@ -113,20 +115,29 @@ export function displayStimuli (
   if (specsBlock1.length) blocks.push(specsBlock1);   // always exists
   if (specsBlock2.length) blocks.push(specsBlock2);   // only in split trials
   
+  /* ----- generate all Stimulus objects for every display ------------*/
+  const placedBlocks: Stimulus[][] = blocks.map(specs =>
+    generateStimuli(GRID, specs, cellSize.cellWidth, cellSize.cellHeight)
+  );
+
+  /* ----- decide & mark which items will be tested -------------------*/
+  assignTestStatus(
+    placedBlocks.flat(),          // all low-level objects together
+    numCircles,
+    composition
+  );
+
   /* Turn the screens into jsPsych trials. The arrow => creates a loop through the blocks */
-  const display = blocks.map((specs, idx) => {
-    /* 2a. Lay out the items on the virtual grid */
-    const placed = generateStimuli(GRID, specs, cellSize.cellWidth, cellSize.cellHeight);        // → [{x,y,r, ...}, …]
-  
+  const display = placedBlocks.map((placed, idx) => {
+
     /* 2b. Convert them to psychophysics-plugin format                */
     const stimuli = filterAndMapStimuli(placed);        // → [{obj_type:"circle", …}, …]
 
     /* 2c. Assigne time durations */
-    const nItems = stimuli.length;          // 3 or 6
-    const presentationDuration = nItems * 100;  // 100 ms per item
+    const presentationDuration = numCircles * 100;  // 100 ms per item
 
     /* --- choose the post-stimulus blank ---------------------------*/
-    const currentType = specs[0].stimulusType;  // feature on *this* screen
+    const currentType = blocks[idx][0].stimulusType;  // feature on *this* screen
     let   postStimulusInterval = 0;
 
     if (numCircles === 3 && currentType === stimulusTypeShownFirst) {
@@ -170,6 +181,7 @@ export function displayStimuli (
         grouping,
         composition,
         layout,
+        trialSegment: 'displayStimuli',
       },
     };
   });

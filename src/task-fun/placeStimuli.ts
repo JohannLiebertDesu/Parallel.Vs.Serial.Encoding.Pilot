@@ -27,7 +27,7 @@ export function generateStimuli (
         const cell = selectAndOccupyCell(grid, side);
         if (cell) {
           stimuli.push(
-            ...createStimulus(cell, cellWidth, cellHeight, stimulusType),
+            ...createStimulus(side, cell, cellWidth, cellHeight, stimulusType),
           );
         }
       }
@@ -36,7 +36,7 @@ export function generateStimuli (
   }
 
 /** * Creates a stimulus based on the provided cell, cell dimensions, and stimulus type. */
-function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, stimulusType: 'colored_circle' | 'oriented_circle'): Stimulus[] {
+function createStimulus(side: 'left' | 'right', cell: GridCell, cellWidth: number, cellHeight: number, stimulusType: 'colored_circle' | 'oriented_circle'): Stimulus[] {
     const color = randomColor();
     const stimuli: Stimulus[] = [];
 
@@ -49,6 +49,8 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             obj_type: 'circle',
             startX: centerX,
             startY: centerY,
+            side,
+            test_status: 'not_tested',
             radius: radius,
             line_color: color,
             fill_color: color,
@@ -66,6 +68,8 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             obj_type: 'circle',
             startX: centerX,
             startY: centerY,
+            side,
+            test_status: 'not_tested',
             radius: radius,
             line_color: 'black',
             fill_color: 'transparent', // No fill for circle_with_line
@@ -78,6 +82,8 @@ function createStimulus(cell: GridCell, cellWidth: number, cellHeight: number, s
             y1: centerY,
             x2: endX,
             y2: endY,
+            side,
+            test_status: 'not_tested',
             line_color: 'black',
             line_width: 3,
         });
