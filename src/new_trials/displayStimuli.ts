@@ -25,6 +25,20 @@ function randomStimulusPair(): [StimulusKind, StimulusKind] {
     : ['oriented_circle', 'colored_circle'];
 }
 
+/** Convert a low-level Stimulus back to its logical “feature type”. 
+ * Basically, to determine what post-stimulus interval to use, we need to know which stimulus type will be probed first.
+ * This is used in the conditions where the stimuli are mixed and interleaved.
+*/
+function stimulusKind(stim: Stimulus): StimulusKind {
+  if (stim.obj_type === 'line') return 'oriented_circle';
+  // circle: transparent → oriented;  coloured → coloured
+  const circle = stim as any;                       // CircleStimulus | Wheel…
+  return circle.fill_color === 'transparent'
+    ? 'oriented_circle'
+    : 'colored_circle';
+}
+
+
 /**
  * Generate the screen containing the colored discs or the oriented discs that have to be remembered.  
  *
@@ -137,22 +151,38 @@ export function displayStimuli (
     const presentationDuration = numCircles * 100;  // 100 ms per item
 
     /* --- choose the post-stimulus blank ---------------------------*/
-    const currentType = blocks[idx][0].stimulusType;  // feature on *this* screen
-    let   postStimulusInterval = 0;
-
+    const currentType = blocks[idx][0].stimulusType;   // feature on *this* screen
+    let postStimulusInterval = 0;
+    
     if (numCircles === 3 && currentType === stimulusTypeShownFirst) {
-      postStimulusInterval = 2300;                   // first 3-item display
-    } else if (numCircles === 3) {                   // second 3-item display
+      postStimulusInterval = 2300;
+    } else if (numCircles === 3) {
       postStimulusInterval = 1000;
-    } else if (numCircles === 6 && grouping === "split") {
-      postStimulusInterval = 1000;                   // always 1 s for split
-    } else if (grouping === "combined" && currentType === stimulusTypeShownFirst) {
-      postStimulusInterval = 2000;                   // 1st feature on combined 6-item
-    } else {                                         // 2nd feature on combined 6-item
+    } else if (numCircles === 6 && grouping === 'split') {
       postStimulusInterval = 1000;
+    } else if (
+      grouping === 'combined' &&
+      layout   === 'clustered' &&
+      currentType === stimulusTypeShownFirst
+    ) {
+      postStimulusInterval = 2000;                      // 1st feature, clustered
+    } else if (
+      grouping === 'combined' &&
+      layout   === 'clustered'
+    ) {
+      postStimulusInterval = 1000;                      // 2nd feature, clustered
+    
+    } else if (grouping === 'combined' && layout === 'interleaved') {
+    
+      // find the logical item that will be probed first
+      const firstTestStim = placed.find(s => s.test_status === 'tested_first');
+      const firstTestKind = firstTestStim ? stimulusKind(firstTestStim) : null;
+    
+      postStimulusInterval =
+        firstTestKind === stimulusTypeShownFirst ? 2000 : 1000;
     }
 
-    /* 2d. Assemble the actual trial object                           */
+
     return {
       type: psychophysics,
       stimuli,
@@ -182,6 +212,7 @@ export function displayStimuli (
         composition,
         layout,
         trialSegment: 'displayStimuli',
+        stimulusTypeShownFirst: stimulusTypeShownFirst,
       },
     };
   });
