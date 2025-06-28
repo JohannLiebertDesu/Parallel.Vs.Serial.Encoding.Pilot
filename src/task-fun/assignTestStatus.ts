@@ -14,11 +14,22 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+export function makeBalancedFirstKinds(n: number): StimulusKind[] {
+    if (n % 2 !== 0) throw new Error("Need an even trial count to balance.");
+    const half = n / 2;
+    const seq: StimulusKind[] = [
+      ...Array(half).fill("colored_circle"),
+      ...Array(half).fill("oriented_circle"),
+    ];
+    return shuffle(seq);      // random permutation, but still 50/50
+  }
+  
 /** Works in-place on the same Stimulus objects you later pass to jsPsych */
 export function assignTestStatus(
   allStimuli: Stimulus[],
   numCircles: 3 | 6,
   composition: 'homogeneous_colour' | 'homogeneous_orientation' | 'mixed',
+  forcedFirst?: StimulusKind            
 ) {
   /* 1. Pack low-level stimuli into logical “items” ------------------*/
   interface Item { indices: number[]; feature: StimulusKind; }
@@ -63,8 +74,13 @@ export function assignTestStatus(
     chosen = [coloured, oriented];
   }
 
-  // randomise which is “first” / “second”
-  chosen = shuffle(chosen);
+  if (forcedFirst) {
+    // ensure the requested feature is the first element
+    chosen.sort(item => (item.feature === forcedFirst ? -1 : 1));
+  } else {
+    // legacy behaviour: random
+    chosen = shuffle(chosen);
+  }
 
   /* 3. Annotate every low-level stimulus in the chosen items --------*/
   chosen[0].indices.forEach(idx => allStimuli[idx].test_status = 'tested_first');

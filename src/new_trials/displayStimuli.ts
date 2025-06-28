@@ -50,6 +50,7 @@ function stimulusKind(stim: Stimulus): StimulusKind {
  * @param composition               - Set composition: "homogeneous" (all colour or all orientation) or "mixed".
  * @param layout                    - Spatial arrangement on mixed trials: "clustered" (segregated) or "interleaved".
  * @param stimulusTypeShownFirst    - Whether the orientation or the color stimuli are shown first in the mixed trials
+ * @param forcedFirstKind           - If defined, this is the stimulus that must be probed first (e.g., for ABBA testing order).
  * @returns One or two displays containing the stimuli, depending on the grouping.
  */
 export function displayStimuli (
@@ -61,6 +62,7 @@ export function displayStimuli (
   composition:   'homogeneous_colour' | 'homogeneous_orientation' | 'mixed',     // set composition
   layout:        'clustered' | 'interleaved',                                    // spatial
   stimulusTypeShownFirst: StimulusKind,                                          // only used in split trials
+  forcedFirstKind?: StimulusKind        
 ): any {
 
 
@@ -138,7 +140,8 @@ export function displayStimuli (
   assignTestStatus(
     placedBlocks.flat(),          // all low-level objects together
     numCircles,
-    composition
+    composition,
+    forcedFirstKind
   );
 
   /* Turn the screens into jsPsych trials. The arrow => creates a loop through the blocks */
@@ -213,6 +216,7 @@ export function displayStimuli (
         layout,
         trialSegment: 'displayStimuli',
         stimulusTypeShownFirst: stimulusTypeShownFirst,
+        forcedFirstKind 
       },
     };
   });

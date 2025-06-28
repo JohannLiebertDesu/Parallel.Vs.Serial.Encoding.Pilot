@@ -47,9 +47,20 @@ function makeOrientationWheelForProbe(circle: CircleStimulus): WheelStimulus {
   return createOrientationWheel(startX, startY, radius * 1.2, radius * 0.6);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main export                                                        */
-/* ------------------------------------------------------------------ */
+/**
+ * Generate the screen where the stimuli features have to be recalled (colour or orientation).  
+ *
+ * @param trialID                   - Trial number 
+ * @param blockID                   - Block number to distinguish different segments of the experiment
+ * @param practice                  - A boolean indicating whether this is a practice trial or not
+ * @param numCircles                - The number of circles to be displayed, either 3 or 6
+ * @param grouping                  - Temporal presentation mode: "combined" (all at once) or "split" (3-then-3).
+ * @param composition               - Set composition: "homogeneous" (all colour or all orientation) or "mixed".
+ * @param layout                    - Spatial arrangement on mixed trials: "clustered" (segregated) or "interleaved".
+ * @param stimulusTypeShownFirst    - Whether the orientation or the color stimuli are shown first in the mixed trials
+ * @param forcedFirstKind           - If defined, this is the stimulus that must be probed first (e.g., for ABBA testing order).
+ * @returns One or two displays containing the stimuli, depending on the grouping.
+ */
 export function featureRecall(
   trialID: number,
   blockID: number,
@@ -58,7 +69,8 @@ export function featureRecall(
   grouping: "combined" | "split",
   composition: "homogeneous_colour" | "homogeneous_orientation" | "mixed",
   layout: "clustered" | "interleaved",
-  stimulusTypeShownFirst: StimulusKind
+  stimulusTypeShownFirst: StimulusKind,
+  forcedFirstKind?: StimulusKind            
 ): any[] {
   /* 1 ── Fetch the sample-phase stimuli for this logical trial ───── */
   const sampleRows = jsPsych.data.get().filter({
@@ -164,8 +176,9 @@ export function featureRecall(
         layout,
         probeIndex: idx + 1,       // 1 → tested_first, 2 → tested_second
         trialSegment: "featureRecall",
-        stimulusTypeShownFirst,
-      },
+        stimulusTypeShownFirst,      
+        forcedFirstKind,                  // if defined, this is the stimulus that must be probed first
+    },
     };
   });
 
