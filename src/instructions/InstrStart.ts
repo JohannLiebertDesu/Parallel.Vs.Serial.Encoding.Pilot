@@ -11,10 +11,6 @@ const instructionSlides = [
   '<div class="custom-instruction-slide"><img src="assets/instructionImages/Slide6.gif" class="instruction-image"></div>'
 ];
 
-
-// Log instruction slides
-console.log("Instruction Slides: ", instructionSlides);
-
 // Define the instruction slides configuration
 export var instructionSlidesConfig = {
   type: instructions,

@@ -123,6 +123,7 @@ export function displayStimuli(
 
     /* -------- run-time generation (fires just before display) ---- */
     on_start(trial: any) {
+      
       /* first screen of the logical trial → build full stimulus set */
       if (placedBlocks.length === 0) {
         const grid = createGrid(numColumns, numRows);     // fresh grid
@@ -142,7 +143,6 @@ export function displayStimuli(
       trial.stimuli        = filterAndMapStimuli(placed);
       trial.trial_duration = numCircles * 100;            // 100 ms/item
 
-      console.log("placed stimuli", placed);
       /* -------- ISI (post-stimulus blank) ------------------------ */
       const currentType = specsThisScreen[0].stimulusType;
       let isi = 0;

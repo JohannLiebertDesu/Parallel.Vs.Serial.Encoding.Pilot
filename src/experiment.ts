@@ -71,21 +71,28 @@ export async function run({
     instructionSlidesConfig          // <- last screen before the task
   );
 
-  /* call-function that assigns the ID *after* instructions */
   timeline.push({
     type: jsPsychCallFunction,
-    async func() {
-      const participantID = await initializeAndAssignSubjectID();   // now safe
+    async: true,                         // ← tell jsPsych to wait
+    func: async (done) => {              // ← done = resume button
+      const participantID = await initializeAndAssignSubjectID();
       jsPsych.data.addProperties({ subject: participantID });
-
-      /* build the real experiment timeline and append it */
+  
       const expNode = buildExperimentNode(participantID);
-      jsPsych.addNodeToEndOfTimeline(expNode);      // <- key line
+  
+      jsPsych.addNodeToEndOfTimeline({
+        timeline: [
+          expNode,                       // task
+          survey_screen,                 // post-task screens
+          debrief_screen,
+          closeFullScreen,
+        ],
+      });
+  
+      done();                            // ← now jsPsych may continue
     },
   });
-
-  /* post-task questionnaires */
-  timeline.push(survey_screen, debrief_screen, closeFullScreen);
-
+  
+    
   await jsPsych.run(timeline);
 }
