@@ -36,6 +36,7 @@ export function assignTestStatus(
   const items: Item[] = [];
   const seen = new Set<number>();
 
+  console.log('assignTestStatus stimuli', allStimuli);
   for (let i = 0; i < allStimuli.length; i++) {
     if (seen.has(i)) continue;
     const s = allStimuli[i];

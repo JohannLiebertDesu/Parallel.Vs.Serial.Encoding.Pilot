@@ -27,7 +27,7 @@ import { survey_screen } from "./ending/questionnaire";
 import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import jsPsychCallFunction from '@jspsych/plugin-call-function';
-import { buildExperimentNode } from "./new_trials/runExperiment";
+import { buildExperimentNode } from "./trials/runExperiment";
 
 
 /**
