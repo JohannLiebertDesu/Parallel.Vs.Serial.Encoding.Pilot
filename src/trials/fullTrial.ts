@@ -1,6 +1,6 @@
 /**********************************************************************
  *  experiment.ts                                                     *
- *  Block-wise control code for the new colour–orientation VWM task.  *
+ *  Block-wise control code for the new color–orientation VWM task.  *
  *                                                                    *
  *  ─ Each block = 20 logical trials.                                 *
  *  ─ Each trial = displayStimuli  ➜  featureRecall.                  *
@@ -20,7 +20,7 @@ export interface BlockConfig {
   /* design factors (one cell = one block) */
   numCircles:              3 | 6;
   grouping:                "combined" | "split";
-  composition:             "homogeneous_colour" | "homogeneous_orientation" | "mixed";
+  composition:             "homogeneous_color" | "homogeneous_orientation" | "mixed";
   layout:                  "clustered" | "interleaved";
   stimulusTypeShownFirst:  StimulusKind;          // varies between participants
 
@@ -40,7 +40,7 @@ export function rotateArray<T>(arr: T[], shift: number): T[] {
   }
   
   export function firstStimulusFor(id: number): StimulusKind {
-    // odd → coloured first, even → oriented first
+    // odd → colored first, even → oriented first
     return id % 2 === 1 ? "colored_circle" : "oriented_circle";
   }
 
@@ -115,7 +115,7 @@ BlockConfig,
 {
   numCircles: 3,
   grouping: "combined",
-  composition: "homogeneous_colour",
+  composition: "homogeneous_color",
   layout: "clustered",
   trialsPerBlock: 20,
 },
@@ -131,7 +131,7 @@ BlockConfig,
 {
   numCircles: 6,
   grouping: "combined",
-  composition: "homogeneous_colour",
+  composition: "homogeneous_color",
   layout: "clustered",
   trialsPerBlock: 20,
 },

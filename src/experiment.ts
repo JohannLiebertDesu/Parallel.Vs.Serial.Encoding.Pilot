@@ -62,11 +62,11 @@ export async function run({
 
   /* pre-task screens */
   timeline.push(
-    fullMode_screen,
-    preloadSlides,
-    welcome_screen,
-    consent_screen,
-    notice_screen,
+    // fullMode_screen,
+    // preloadSlides,
+    // welcome_screen,
+    // consent_screen,
+    // notice_screen,
     browser_screen,
     instructionSlidesConfig          // <- last screen before the task
   );

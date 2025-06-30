@@ -28,7 +28,7 @@ export function makeBalancedFirstKinds(n: number): StimulusKind[] {
 export function assignTestStatus(
   allStimuli: Stimulus[],
   numCircles: 3 | 6,
-  composition: 'homogeneous_colour' | 'homogeneous_orientation' | 'mixed',
+  composition: 'homogeneous_color' | 'homogeneous_orientation' | 'mixed',
   forcedFirst?: StimulusKind            
 ) {
   /* 1. Pack low-level stimuli into logical “items” ------------------*/
@@ -46,7 +46,7 @@ export function assignTestStatus(
     const group: Item = { indices: [i], feature: 'colored_circle' };
     seen.add(i);
 
-    // coloured vs. oriented is decided by fill colour
+    // colored vs. oriented is decided by fill color
     if ('fill_color' in s && s.fill_color === 'transparent') {
       group.feature = 'oriented_circle';
       // find the matching line (same centre)
@@ -69,9 +69,9 @@ export function assignTestStatus(
   if (numCircles === 3 || composition !== 'mixed') {
     chosen = shuffle(items).slice(0, 2);          // any two
   } else {                                        // mixed – one of each
-    const coloured = shuffle(items.filter(x => x.feature === 'colored_circle'))[0];
+    const colored = shuffle(items.filter(x => x.feature === 'colored_circle'))[0];
     const oriented = shuffle(items.filter(x => x.feature === 'oriented_circle'))[0];
-    chosen = [coloured, oriented];
+    chosen = [colored, oriented];
   }
 
   if (forcedFirst) {
