@@ -1,4 +1,4 @@
-import { WheelStimulus } from "../task-fun/createStimuli";
+import { WheelStimulus } from "./defineStimuli";
 
 // The wheels are just basic psychophysics stimuli of the obj_type: 'manual'. They get drawn using the drawFunc property.
 // We can then import them into the trial as one of the stimuli displayd on screen.
@@ -17,8 +17,6 @@ export function createColorWheel(
       startY, // This is the y-coordinate of the center of the wheel
       outerRadius,
       innerRadius,
-      show_start_time: 0, // Not necessarily relevant for this experiment, but can tecnically be used to show the wheel at a specific time
-      show_end_time: null, // Show for the duration of the trial
       offset, // Offset in degrees -> I use this so that the color wheel does not always have the same layout. It's important to match this number with the "invisible" color wheel that a participant selects from when they move the mouse around the stimulus.
       drawFunc: function(stimulus, canvas, context) { // (these are not passed by me, but required by the psychophysics plugin)
         const numSegments = 360; // Number of color segments
@@ -46,17 +44,16 @@ export function createOrientationWheel(
     startY: number,
     outerRadius: number,
     innerRadius: number,
+    offset: number
     ): WheelStimulus {
     return {
         category: 'customWheel', // Custom category to identify this stimulus
         obj_type: 'manual', // Ensure this matches your registration
-        startX: startX,
-        startY: startY,
-        outerRadius: outerRadius,
-        innerRadius: innerRadius,
-        show_start_time: 0,
-        show_end_time: null, // Show for the duration of the trial
-        offset: 0, // No offset for orientation wheel
+        startX,
+        startY,
+        outerRadius,
+        innerRadius,
+        offset, // No offset for orientation wheel
         drawFunc: function(stimulus, canvas, context) { 
             // Step 1: Fill the wheel with black
             context.beginPath();

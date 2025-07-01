@@ -8,7 +8,7 @@ import {
   cellSize
 } from "../task-fun/createGrid";
 import { filterAndMapStimuli } from "../task-fun/filterStimuli";
-import { Stimulus } from "../task-fun/createStimuli";
+import { Stimulus } from "../task-fun/defineStimuli";
 import { assignTestStatus } from "../task-fun/assignTestStatus";
 
 /* ─────────────────────────── helpers ──────────────────────────── */
@@ -120,6 +120,7 @@ export function displayStimuli(
     stimuli: [],                   // will be filled in on_start
     choices: "NO_KEYS",
     background_color: "#FFFFFF",
+    trial_duration: 1000,         // will be overwritten in on_start
 
     /* -------- run-time generation (fires just before display) ---- */
     on_start(trial: any) {
@@ -131,17 +132,28 @@ export function displayStimuli(
           generateStimuli(grid, specs, cellSize.cellWidth, cellSize.cellHeight)
         );
 
-        assignTestStatus(
-          placedBlocks.flat(),
-          numCircles,
-          composition,
-          forcedFirstKind
-        );
-      }
+        console.table(placedBlocks[screenIdx]);
 
-      const placed = placedBlocks[screenIdx];
-      trial.stimuli        = filterAndMapStimuli(placed);
+        // assignTestStatus(
+        //   placedBlocks.flat(),
+        //   numCircles,
+        //   composition,
+        //   forcedFirstKind
+        // );
+      }
+      console.log("Do we get here? 1");
+
+      const placed = placedBlocks[screenIdx];       //  ← add this back
+      console.log('placed:', placed);
+    
+      trial.stimuli = placed;                       // or filterAndMapStimuli(placed)
+      console.table(trial.stimuli);
+
+      console.log("Do we get here? 2");
+
       trial.trial_duration = numCircles * 100;            // 100 ms/item
+
+      console.log("Do we get here? 3");
 
       /* -------- ISI (post-stimulus blank) ------------------------ */
       const currentType = specsThisScreen[0].stimulusType;

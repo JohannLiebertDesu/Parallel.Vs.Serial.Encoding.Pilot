@@ -18,7 +18,7 @@ import {
   LineStimulus,
   CircleStimulus,
   WheelStimulus,
-} from "../task-fun/createStimuli";
+} from "../task-fun/defineStimuli";
 import { StimulusKind } from "../task-fun/placeStimuli";
 
 // Type helpers
@@ -44,7 +44,7 @@ function makeColorWheelForProbe(circle: CircleStimulus): WheelStimulus {
 }
 function makeOrientationWheelForProbe(circle: CircleStimulus): WheelStimulus {
   const { startX, startY, radius } = circle;
-  return createOrientationWheel(startX, startY, radius * 1.2, radius * 0.6);
+  return createOrientationWheel(startX, startY, radius * 1.2, radius * 0.6, 0);
 }
 
 /**

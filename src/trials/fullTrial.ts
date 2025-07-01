@@ -70,20 +70,20 @@ function pushTrial(
     )
   );
 
-  /* 2 ── FEATURE RECALL ─────────────────────────────────────────── */
-  timeline.push(
-    ...featureRecall(
-      trialID,
-      cfg.blockID,
-      cfg.practice,
-      cfg.numCircles,
-      cfg.grouping,
-      cfg.composition,
-      cfg.layout,
-      cfg.stimulusTypeShownFirst,
-      forcedFirst
-    )
-  );
+//   /* 2 ── FEATURE RECALL ─────────────────────────────────────────── */
+//   timeline.push(
+//     ...featureRecall(
+//       trialID,
+//       cfg.blockID,
+//       cfg.practice,
+//       cfg.numCircles,
+//       cfg.grouping,
+//       cfg.composition,
+//       cfg.layout,
+//       cfg.stimulusTypeShownFirst,
+//       forcedFirst
+//     )
+//   );
 }
 
 /* ------------------------------------------------------------------ */

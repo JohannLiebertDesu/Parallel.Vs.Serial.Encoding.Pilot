@@ -1,4 +1,4 @@
-import { Stimulus } from './createStimuli';
+import { Stimulus } from './defineStimuli';
 import { StimulusKind } from './placeStimuli';
 
 /* ------------------------------------------------------------------

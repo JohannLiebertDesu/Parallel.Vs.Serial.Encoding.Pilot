@@ -1,4 +1,4 @@
-import { Stimulus, LineStimulus, CircleStimulus } from './createStimuli';
+import { Stimulus, LineStimulus, CircleStimulus } from './defineStimuli';
 
 export function filterAndMapStimuli(stimuli_array: Stimulus[]): (LineStimulus | CircleStimulus)[] {
     return stimuli_array

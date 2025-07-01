@@ -1,5 +1,5 @@
 import { GridCell, selectAndOccupyCell, radius } from './createGrid';
-import { Stimulus } from './createStimuli';
+import { Stimulus } from './defineStimuli';
 
 /** Which basic shapes we support */
 export type StimulusKind = 'colored_circle' | 'oriented_circle';
@@ -60,8 +60,8 @@ function createStimulus(side: 'left' | 'right', cell: GridCell, cellWidth: numbe
         const angle = Math.random() * 2 * Math.PI; // Random angle in radians
         const line_length = radius; // Line length is equal to the radius
 
-        const endX = centerX + line_length * Math.cos(angle);
-        const endY = centerY + line_length * Math.sin(angle);
+        const secondX = centerX + line_length * Math.cos(angle);
+        const secondY = centerY + line_length * Math.sin(angle);
 
         stimuli.push({
             category: 'predefined',
@@ -80,8 +80,8 @@ function createStimulus(side: 'left' | 'right', cell: GridCell, cellWidth: numbe
             obj_type: 'line',
             x1: centerX,
             y1: centerY,
-            x2: endX,
-            y2: endY,
+            x2: secondX,
+            y2: secondY,
             side,
             test_status: 'not_tested',
             line_color: 'black',
