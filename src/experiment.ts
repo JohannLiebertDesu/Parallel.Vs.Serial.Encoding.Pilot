@@ -34,6 +34,7 @@ import { createColorWheel, createOrientationWheel } from "./task-fun/createWheel
 import { generateStimuli, StimulusSpec } from "./task-fun/placeStimuli";
 import { GridCell, createGrid, numColumns, numRows, cellSize } from "./task-fun/createGrid";
 import { displayStimuli } from "./trials/displayStimuli";
+import { displayStimuliTest } from "./trials/displayStimuliTest";
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -178,15 +179,8 @@ export async function run({
   }
 
   const fullTrialStimuli = 
-  displayStimuli(1, 1, true, 6, "combined", "homogeneous_orientation", "clustered", "colored_circle", "colored_circle");
+  displayStimuli(1, 1, true, 3, "combined", "homogeneous_color", "clustered", "colored_circle", "colored_circle");
 
-  // const fullTrial = {
-  //   type: psychophysics,
-  //   stimuli: [fullTrialStimuli],
-  //   choices: "NO_KEYS",
-  //   trial_duration: 1000,
-  //   background_color: "#ffffff",
-  // }; 
 
   /* pre-task screens */
   timeline.push(
@@ -205,30 +199,30 @@ export async function run({
     multipleOrientedCirclesTrial, // <- multiple oriented circles
     multipleColoredCirclesTrial, // <- multiple colored circles
     combinedStimuliTrial,
-    fullTrialStimuli[0], 
+    ...fullTrialStimuli, 
   );
 
-  timeline.push({
-    type: jsPsychCallFunction,
-    async: true,                         // ← tell jsPsych to wait
-    func: async (done) => {              // ← done = resume button
-      const participantID = await initializeAndAssignSubjectID();
-      jsPsych.data.addProperties({ subject: participantID });
+  // timeline.push({
+  //   type: jsPsychCallFunction,
+  //   async: true,                         // ← tell jsPsych to wait
+  //   func: async (done) => {              // ← done = resume button
+  //     const participantID = await initializeAndAssignSubjectID();
+  //     jsPsych.data.addProperties({ subject: participantID });
   
-      const expNode = buildExperimentNode(participantID);
+  //     const expNode = buildExperimentNode(participantID);
   
-      jsPsych.addNodeToEndOfTimeline({
-        timeline: [
-          expNode,                       // task
-          survey_screen,                 // post-task screens
-          debrief_screen,
-          closeFullScreen,
-        ],
-      });
+  //     jsPsych.addNodeToEndOfTimeline({
+  //       timeline: [
+  //         expNode,                       // task
+  //         survey_screen,                 // post-task screens
+  //         debrief_screen,
+  //         closeFullScreen,
+  //       ],
+  //     });
   
-      done();                            // ← now jsPsych may continue
-    },
-  });
+  //     done();                            // ← now jsPsych may continue
+  //   },
+  // });
   
   await jsPsych.run(timeline);
 }
