@@ -3,6 +3,7 @@ import psychophysics                                 from "@kurokida/jspsych-psy
 import { generateStimuli, StimulusSpec, StimulusKind } from "../task-fun/placeStimuli";
 import { createGrid, numColumns, numRows, cellSize   } from "../task-fun/createGrid";
 import { Stimulus                                    } from "../task-fun/defineStimuli";
+import { assignTestStatus }                          from "../task-fun/assignTestStatus";
 
 /* ───────── helpers ───────── */
 
@@ -92,17 +93,27 @@ export function displayStimuli(
 
     type: psychophysics,
 
-    /* ----------  KEY CHANGE: generate stimuli up-front ---------- */
     stimuli: () => {
-      if (placedBlocks.length === 0) {             // first screen only
+      if (placedBlocks.length === 0) {          // ← this runs only once
         const grid = createGrid(numColumns, numRows);
+    
+        // 1. generate every stimulus for every screen of the logical trial
         placedBlocks = blocksSpecs.map(specs =>
           generateStimuli(grid, specs,
                           cellSize.cellWidth, cellSize.cellHeight)
         );
+    
+        // 2. tag exactly two logical items with tested_first / tested_second
+        assignTestStatus(
+          placedBlocks.flat(),          // all low-level stimuli in the trial
+          numCircles,
+          composition,
+          forcedFirstKind               // may be undefined
+        );
       }
-      return placedBlocks[screenIdx];              // hand array to plugin
-    },
+    
+      // 3. hand the stimuli for *this* screen to the plugin
+      return placedBlocks[screenIdx];    },
 
     choices         : "NO_KEYS",
     background_color: "#FFFFFF",
@@ -145,6 +156,7 @@ export function displayStimuli(
     /* -------------- bookkeeping --------------------------------- */
     on_finish(data: any) {
       data.stimuliData = placedBlocks[screenIdx];
+      console.log("displayStimuli: placed stimuli", data.stimuliData);
     },
 
     data: {
