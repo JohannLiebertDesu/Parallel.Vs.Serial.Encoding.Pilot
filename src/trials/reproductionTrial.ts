@@ -5,7 +5,6 @@
 
 import psychophysics                       from "@kurokida/jspsych-psychophysics";
 import { jsPsych }                         from "../jsp";
-import { filterAndMapStimuli }             from "../task-fun/filterStimuli";
 import { createColorWheel,
          createOrientationWheel }          from "../task-fun/createWheels";
 
@@ -59,40 +58,49 @@ export function featureRecall(
       post_trial_gap  : probeIndex === 1 ? 100 : 1000,
 
       stimuli: () => {
-
-        /* 1. fetch sample-phase stimuli for THIS logical trial ---- */
+        // 1) fetch sample-phase stimuli for THIS logical trial
         const sampleRows = jsPsych.data.get().filter({
           trialID, blockID, practice, trialSegment: "displayStimuli"
         });
-
-        const allStimuli: Stimulus[] =
-          sampleRows.values().flatMap((r: any) => r.stimuliData);
-
+        const allStimuli: Stimulus[] = sampleRows.values().flatMap((r: any) => r.stimuliData);
+      
         const logicalItem = allStimuli.filter(
-          s => s.test_status ===
-               (probeIndex === 1 ? "tested_first" : "tested_second")
+          s => s.test_status === (probeIndex === 1 ? "tested_first" : "tested_second")
         );
-
-        /* 2. anchor + wheel -------------------------------------- */
+      
+        // 2) anchor + wheel
         const isOrientation = logicalItem.some(isLineStimulus);
-
-        anchorCircle = (isOrientation
-          ? logicalItem.find(
-              s => isCircleStimulus(s) &&
-                   (s as CircleStimulus).fill_color === "transparent")
-              ?? logicalItem.find(isCircleStimulus)
+      
+        const anchorCircle = (isOrientation
+          ? logicalItem.find(s =>
+              isCircleStimulus(s) && (s as CircleStimulus).fill_color === "transparent"
+            ) ?? logicalItem.find(isCircleStimulus)
           : logicalItem.find(isCircleStimulus)) as CircleStimulus;
-
-        if (!anchorCircle)
-          throw new Error("Could not locate anchor circle for wheel creation.");
-
+      
+        if (!anchorCircle) throw new Error("Could not locate anchor circle for wheel creation.");
+      
         const wheelStim = isOrientation
           ? makeOrientationWheelForProbe(anchorCircle)
           : makeColorWheelForProbe(anchorCircle);
-
-
-        /* 3. return final stimulus array -------------------------- */
-        return [...logicalItem, wheelStim];
+      
+        // 3) RETURN display copies that hide the answer until mouse moves
+        const displayItem: Stimulus[] = logicalItem.map((obj): Stimulus => {
+          if (isLineStimulus(obj)) {
+            // collapse the line to hide orientation
+            const o = obj as LineStimulus;
+            return { ...o, x2: o.x1, y2: o.y1 };
+          }
+          if (isCircleStimulus(obj)) {
+            // neutral circle (no informative color) for both trial types
+            const o = obj as CircleStimulus;
+            return { ...o, fill_color: "transparent", line_color: "#000000" };
+          }
+          // fallback (shouldn't happen here): just return the object as-is, no spread
+          return obj as Stimulus;
+        });
+        
+      
+        return [...displayItem, { ...wheelStim }];
       },
 
       /* ---------------- mouse handler --------------------------- */
@@ -117,7 +125,6 @@ export function featureRecall(
         if (liveLine && cx !== undefined && cy !== undefined && R !== undefined) {
           // compute mouse angle around the anchor center
           const rad = Math.atan2(offsetY - cy, offsetX - cx);
-          const deg = (rad * 180) / Math.PI + (rad < 0 ? 360 : 0);
       
           liveLine.x2 = liveLine.x1 + R * Math.cos(rad);
           liveLine.y2 = liveLine.y1 + R * Math.sin(rad);

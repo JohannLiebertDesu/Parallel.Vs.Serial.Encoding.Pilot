@@ -137,11 +137,18 @@ export function displayStimuli(
       } else if (
         grouping === "combined" &&
         layout   === "clustered" &&
-        currentType === stimulusTypeShownFirst
+        composition === "mixed"
       ) {
-        isi = 2000;
+        const firstTestStim = placed.find(
+          (s: Stimulus) => (s as any).test_status === "tested_first"
+        );
+        const firstTestKind = firstTestStim ? stimulusKind(firstTestStim) : null;
+        isi = firstTestKind === stimulusTypeShownFirst ? 2000 : 1000;
+    
+      // unchanged: homogeneous clustered keeps participant-level timing
       } else if (grouping === "combined" && layout === "clustered") {
-        isi = 1000;
+        isi = currentType === stimulusTypeShownFirst ? 2000 : 1000;
+    
       } else if (grouping === "combined" && layout === "interleaved") {
         const firstTestStim = placed.find(
           (s: Stimulus) => (s as any).test_status === "tested_first"
