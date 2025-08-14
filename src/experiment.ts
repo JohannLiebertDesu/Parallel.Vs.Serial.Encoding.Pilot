@@ -28,12 +28,6 @@ import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import jsPsychCallFunction from '@jspsych/plugin-call-function';
 import { buildExperimentNode } from "./trials/runExperiment";
-import psychophysics from "@kurokida/jspsych-psychophysics";
-import { Stimulus, CircleStimulus, LineStimulus, WheelStimulus } from "./task-fun/defineStimuli";
-import { createColorWheel, createOrientationWheel } from "./task-fun/createWheels";
-import { generateStimuli, StimulusSpec } from "./task-fun/placeStimuli";
-import { GridCell, createGrid, numColumns, numRows, cellSize } from "./task-fun/createGrid";
-import { JsPsych } from "jspsych";
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -64,16 +58,13 @@ export async function run({
     ]
   };
 
-
-
-
   /* pre-task screens */
   timeline.push(
-    // fullMode_screen,
-    // preloadSlides,
-    // welcome_screen,
-    // consent_screen,
-    // notice_screen,
+    fullMode_screen,
+    preloadSlides,
+    welcome_screen,
+    consent_screen,
+    notice_screen,
     browser_screen,
     instructionSlidesConfig,      
   );

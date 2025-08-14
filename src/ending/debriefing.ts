@@ -8,7 +8,7 @@ export const debrief_screen = {
       <h2 style="color: darkblue; text-align: center; margin-bottom: 80px; font-size: 50px;">Debriefing</h2>
       <div style="margin-left: 0; padding-left: 20px;">
         <p>Thank you for taking part in this experiment. We’re studying how two sets of information can affect each other when you try to remember them at the same time. This helps us understand how memory works when you need to handle a lot of information quickly.</p>
-        <p>More specifically, we looked at how knowing the order of recall affects memory. Some participants knew the recall order (right first, then left), while others had to recall in a random order. This let us see if having a set order makes it easier to remember things.</p>
+        <p>More specifically, we wanted to find out whether remembering 6 items of the same type done as well as remembering 3 items of one type + 3 items of another.</p>
         <p>Your participation helps us learn more about how memory works and what factors make it easier or harder to remember things.</p>
         <p>If you have any remaining questions regarding the study, please contact Noah Rischert at <a href="mailto:rischert@psychologie.uzh.ch">rischert@psychologie.uzh.ch</a>.</p>
         <div style="text-align: right;">

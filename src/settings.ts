@@ -12,7 +12,7 @@ setCSS();
 
 export const expInfo = {
   // settings for the experiment
-  TITLE: "DualSet.Interference.Exp1",
+  TITLE: "DualSet.Interference.Exp3",
   LANG: "en", // the default language of the experiment
 
   // design of the experiment
@@ -31,10 +31,10 @@ export const expInfo = {
   // e.g., when participants complete the experiment, or when they fail the attention check
   // you can set them here and use them in the end of the experiment (jsp.ts)
   CODES: {
-    SUCCESS: "CPQW2L6V", // the code for a successfully completion of the experiment
-    OFFLINE: "CPQW2L6V", // the code for the offline situation
-    FAILED_ATTENTION: "C7AEPEAD", // the code for the failed experiment
-    FAILED_OTHERS: "CA5G8VEJ", // the code for other failed situations (e.g., failed to resize the window)
+    SUCCESS: "C17L614H", // the code for a successfully completion of the experiment
+    OFFLINE: "CT6UZCBB", // the code for the offline situation
+    FAILED_ATTENTION: "C16PVDBW", // the code for the failed experiment
+    FAILED_OTHERS: "C10CL4CD", // the code for other failed situations (e.g., failed to resize the window)
     // You can specify the codes for different situations here.
   },
 
@@ -54,7 +54,7 @@ export const expInfo = {
   // https://www.toptal.com/developers/keycode/
 
   // Running environment variables
-  RUN_JATOS: false, // a switch to run the experiment on JATOS
+  RUN_JATOS: true, // a switch to run the experiment on JATOS
 };
 
 // Global variables for the system. Normally, you don't need to change them.
