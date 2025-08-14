@@ -34,10 +34,47 @@ export interface BlockConfig {
 /*  BLOCK-LEVEL HELPERS                                               */
 /* ------------------------------------------------------------------ */
 
-export function rotateArray<T>(arr: T[], shift: number): T[] {
-    const s = ((shift % arr.length) + arr.length) % arr.length;      // handle big / negative
-    return [...arr.slice(s), ...arr.slice(0, s)];
+/** Interleaving permutation: [0,1,n-1,2,n-2,3,n-3,...] */
+function interleavingPermutation(n: number): number[] {
+  const out: number[] = [];
+  let left = 0, right = n - 1;
+
+  // first two are 0,1 to match the Williams recipe
+  out.push(left++); 
+  if (n > 1) out.push(left++);
+
+  while (out.length < n) {
+    out.push(right--);
+    if (out.length < n) out.push(left++);
+    if (out.length < n) out.push(right--);
+    if (out.length < n) out.push(left++);
   }
+  return out;
+}
+
+/** Build Williams sequences for labels 0..n-1.
+ *  Even n  -> n sequences; Odd n -> 2n sequences (includes reversals).
+ */
+function williamsSequences(n: number): number[][] {
+  const base = Array.from({ length: n }, (_, i) => i);
+  const perm = interleavingPermutation(n);
+
+  const rotate = (seq: number[], k: number) => seq.slice(k).concat(seq.slice(0, k));
+  const rotations = Array.from({ length: n }, (_, k) => rotate(base, k));
+  let seqs = rotations.map(rot => perm.map(p => rot[p]));
+
+  if (n % 2 === 1) {
+    // For odd n, append the complete set of reversed sequences
+    seqs = seqs.concat(seqs.map(s => [...s].reverse()));
+  }
+  return seqs;
+}
+
+/** Pick the Williams order (as indices) for a given participant ID (1-based). */
+export function williamsOrderForParticipant(n: number, participantID: number): number[] {
+  const seqs = williamsSequences(n);
+  return seqs[(participantID - 1) % seqs.length];
+}
   
   export function firstStimulusFor(id: number): StimulusKind {
     // odd → colored first, even → oriented first

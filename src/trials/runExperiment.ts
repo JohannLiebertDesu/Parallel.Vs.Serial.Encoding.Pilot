@@ -1,5 +1,5 @@
 /* -------- experiment.ts ------------------------------------------ */
-import { runBlock, BlockConfig, rotateArray, firstStimulusFor, DESIGN } from "./fullTrial";
+import { runBlock, BlockConfig, firstStimulusFor, DESIGN, williamsOrderForParticipant } from "./fullTrial";
 import {
   createPrePracticeScreen,
   createPostPracticeScreen,
@@ -14,28 +14,29 @@ import {
  * @param practice  Whether this run is practice or main task.
  */
 export function runExperiment(timeline: any[], participantID: number) {
-  // 1) participant-specific rotation
-  const baseOrder = rotateArray(DESIGN, (participantID - 1) % DESIGN.length);
+  // 1) participant-specific first-stim flip
   const firstStimulusKind = firstStimulusFor(participantID);
 
-  // 2) duplicate mixed blocks
-  const expandedOrder = baseOrder.flatMap(d => (d.composition === "mixed" ? [d, { ...d }] : [d]));
+  // 2) duplicate mixed blocks BEFORE ordering (so they’re distinct levels)
+  const expandedOrder = DESIGN.flatMap(d =>
+    d.composition === "mixed" ? [d, { ...d }] : [d]
+  );
 
-  // 3) build configs
-  const participantBlocks: BlockConfig[] = expandedOrder.map((d, idx) => ({
-    ...d,
-    blockID: idx + 1,
+  // 3) Williams order over the expanded set
+  const orderIdx = williamsOrderForParticipant(expandedOrder.length, participantID);
+  const participantBlocks: BlockConfig[] = orderIdx.map((idx, i) => ({
+    ...expandedOrder[idx],
+    blockID: i + 1,
     practice: false,
     stimulusTypeShownFirst: firstStimulusKind,
   }));
 
   const totalBlocks = participantBlocks.length;
 
-  // 4) for each block: pre-practice screen → practice → post-practice → main → between-block screen
+  // 4) assemble timeline (unchanged from your version)
   participantBlocks.forEach((blockCfg, i) => {
     const practiceTrials = i === 0 ? 10 : 4;
 
-    // PRE-PRACTICE INFO
     timeline.push(
       createPrePracticeScreen(blockCfg.blockID, totalBlocks, practiceTrials, {
         numCircles: blockCfg.numCircles,
@@ -45,16 +46,10 @@ export function runExperiment(timeline: any[], participantID: number) {
       })
     );
 
-    // PRACTICE
     runBlock(timeline, { ...blockCfg, practice: true, trialsPerBlock: practiceTrials });
-
-    // POST-PRACTICE CONNECTOR
     timeline.push(createPostPracticeScreen(blockCfg.blockID, totalBlocks));
-
-    // MAIN BLOCK (20 trials)
     runBlock(timeline, blockCfg);
 
-    // BETWEEN-BLOCK BREAK (skip after last)
     if (i !== totalBlocks - 1) {
       timeline.push(createBetweenBlockBreakScreen(blockCfg.blockID, totalBlocks));
     }

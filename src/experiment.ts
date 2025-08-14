@@ -1,5 +1,5 @@
 /**
- * @title DualSet Interference Exp1
+ * @title DualSet Interference Exp3
  * @description Inspecting the impact of a random vs an ABBA testing sequence on dual-set interference in WM
  * @author Noah Rischert, Chenyu Li and Hannah (Dames) Tschannen
  * @version 0.3.2
@@ -60,11 +60,11 @@ export async function run({
 
   /* pre-task screens */
   timeline.push(
-    fullMode_screen,
     preloadSlides,
     welcome_screen,
     consent_screen,
     notice_screen,
+    fullMode_screen,
     browser_screen,
     instructionSlidesConfig,      
   );
