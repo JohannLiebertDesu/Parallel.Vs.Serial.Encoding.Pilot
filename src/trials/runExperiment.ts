@@ -1,5 +1,12 @@
 import { BlockConfig } from "./fullTrial";
 
+const assumedHz = 60 // frames per second
+const fixationDuration = 0.5 // in seconds
+const fixationFrameCount = Math.ceil(assumedHz * fixationDuration)
+const maskDuration = 0.05 // in seconds
+const maskFrameCount = Math.ceil(assumedHz * maskDuration)
+const possibleDegPerFrame = [0, 5, 10, 15]
+const startDurationStimuli = 0.08 //s = 80ms
 
   // ----- Configure one block (edit to taste) -----
   export const block1: BlockConfig = {
@@ -7,12 +14,12 @@ import { BlockConfig } from "./fullTrial";
     startY: 0,
     width: 200,
     height: 200,
-    deg_per_frame: 10,      // hue step per frame
+    deg_per_frame: possibleDegPerFrame[0],      // hue step per frame
     stimuliFrameCount: 3,
-    maskFrameCount: 3,
-    fixationFrameCount: 200,
+    maskFrameCount: maskFrameCount,
+    fixationFrameCount: fixationFrameCount,
     tile: 4,               // tile size (px) for the mask
-    assumedHz: 60,
+    assumedHz: assumedHz,
 
     wheelOuterRadius: 450,
     wheelInnerRadius: 350,
@@ -24,6 +31,28 @@ import { BlockConfig } from "./fullTrial";
     trialsPerBlock: 10,
   };
 
+
+    export const block2: BlockConfig = {
+    startX: 0,
+    startY: 0,
+    width: 200,
+    height: 200,
+    deg_per_frame: 10,      // hue step per frame
+    stimuliFrameCount: 3,
+    maskFrameCount: maskFrameCount,
+    fixationFrameCount: fixationFrameCount,
+    tile: 4,               // tile size (px) for the mask
+    assumedHz: assumedHz,
+
+    wheelOuterRadius: 450,
+    wheelInnerRadius: 350,
+
+    ITIduration: 2000,
+
+    blockID: 1,
+    practice: false,
+    trialsPerBlock: 10,
+  };
 
 // /**
 //  * Build and run the whole experiment.

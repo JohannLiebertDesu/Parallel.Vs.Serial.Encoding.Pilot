@@ -28,6 +28,7 @@ import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import jsPsychCallFunction from '@jspsych/plugin-call-function';
 import { buildBlock } from "./trials/fullTrial"
+import { seedCalibrationBlock } from "./trials/fullCalibrationTrial";
 import psychophysics from "@kurokida/jspsych-psychophysics";
 import {block1 } from "./trials/runExperiment"
 
@@ -50,7 +51,17 @@ var timeline: any[] = [];
 
 
 
-buildBlock(timeline, block1);
+seedCalibrationBlock(timeline, block1, {
+  maxTrials: 50,
+  startMs: 80,
+  errTolDeg: 30,
+  upStep: 1,
+  downStep: 3,
+  minMs: 20,
+  maxMs: 500,
+});
+
+// buildBlock(timeline, block2);  // etc.
 
 
 

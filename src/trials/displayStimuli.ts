@@ -31,6 +31,9 @@ export function displayStimuli(
     data: {
       trialID, blockID, practice,
       trialSegment: "stimuliPresentation",
+      deg_per_frame: deg_per_frame,
+      rotation: rotation,
+      trialDuration: trialDuration
       }
   };
 

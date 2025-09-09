@@ -25,6 +25,7 @@ export function featureRecall(
   rotation: string,
   deg_per_frame: number,
   stimuliFrameCount: number,
+  trialDuration: number,
   L = 1, 
   C = 0,
 ): any[] {
@@ -85,6 +86,7 @@ export function featureRecall(
       data.blockID              = blockID;
       data.practice             = practice;
       data.trialSegment         = "featureRecall";
+      data.trialDuration        = trialDuration;
 
       data.wheelOffset_deg      = wheelOffset;
       data.target_color_deg     = initHue;
