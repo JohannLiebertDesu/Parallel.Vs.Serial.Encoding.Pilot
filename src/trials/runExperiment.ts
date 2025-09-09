@@ -18,14 +18,11 @@ import { BlockConfig } from "./fullTrial";
     wheelInnerRadius: 350,
 
     ITIduration: 2000,
-    
+
     blockID: 1,
     practice: false,
-    trialsPerBlock: 20,
+    trialsPerBlock: 10,
   };
-
-
-
 
 
 // /**

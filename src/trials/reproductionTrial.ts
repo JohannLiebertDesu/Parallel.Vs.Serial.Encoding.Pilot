@@ -8,12 +8,6 @@ import { jsPsych }                         from "../jsp";
 import { createColorWheel}                 from "../task-fun/createWheels";
 import { colorconversion }                 from "../task-fun/colorConversion";
 
-
-export const screenWidth = window.screen.width; // Width of the user's screen
-export const screenHeight = window.screen.height; // Height of the user's screen
-export const centerX = screenWidth / 2;
-export const centerY = screenHeight / 2;
-
 const signedDiff360 = (a: number, b: number) => (((a - b + 540) % 360) - 180);
 
 // Factory
@@ -28,26 +22,30 @@ export function featureRecall(
   wheelOuterRadius: number,
   wheelInnerRadius: number,
   initHue: number,
+  rotation: string,
+  deg_per_frame: number,
+  stimuliFrameCount: number,
   L = 1, 
   C = 0,
 ): any[] {
 
   const wheelOffset = Math.random() * 360;
-
-  const wheel = createColorWheel(centerX, centerY, wheelOuterRadius, wheelInnerRadius, wheelOffset);
+  const dir = rotation === "ccw" ? -1 : 1;
 
   let selectedHue: number;
 
   const patch = {
     obj_type: "rect",
-    centerX,
-    centerY,
-    origin_center: false,
+    startX,
+    startY,
+    origin_center: true,
     width: width,
     height: height,
     line_color: colorconversion({ l: L, c: C, h: 0 }),
     fill_color: colorconversion({ l: L, c: C, h: 0 }),
   };
+
+  const wheel = createColorWheel(startX, startY, wheelOuterRadius, wheelInnerRadius, wheelOffset);
 
   const trial: any = {
     type: psychophysics,
@@ -63,8 +61,8 @@ export function featureRecall(
       const livePatch = live.find(s => s.obj_type === "rect");
       if (!liveWheel || !livePatch) return;
 
-      const cx = liveWheel.currentX ?? liveWheel.startX;
-      const cy = liveWheel.currentY ?? liveWheel.startY;
+      const cx = livePatch.currentX ?? livePatch.startX;
+      const cy = livePatch.currentY ?? livePatch.startY;
 
       const dx = ev.offsetX - cx;
       const dy = ev.offsetY - cy;
@@ -73,8 +71,8 @@ export function featureRecall(
       let deg = Math.atan2(dy, dx) * 180 / Math.PI;
       if (deg < 0) deg += 360;
 
-      // remove wheel offset so 0° is canonical wheel 0°
-      const hue = (deg - wheelOffset + 360) % 360;
+      // add wheel offset 
+      const hue = (deg + wheelOffset + 360) % 360;
       selectedHue = hue;
 
       const col = colorconversion({ l: 0.6, c: 0.1, h: hue });
@@ -92,6 +90,12 @@ export function featureRecall(
       data.target_color_deg     = initHue;
       data.selected_color_deg   = selectedHue;
       data.signed_error_deg     = signedDiff360(selectedHue, initHue);
+      data.err_deg_aligned      = dir * data.signed_error_deg;        
+      data.abs_error_deg        = Math.abs(data.signed_error_deg);
+      data.deg_per_frame        = deg_per_frame;
+      data.stimuliFrameCount    = stimuliFrameCount;
+      data.total_drift_deg      = dir * (stimuliFrameCount - 1) * deg_per_frame;
+      data.rotation             = rotation;
     },
   };
   return [trial];

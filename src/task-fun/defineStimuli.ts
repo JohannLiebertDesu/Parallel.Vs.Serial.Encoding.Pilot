@@ -29,6 +29,7 @@ export type LineStimulus = {
   export type WheelStimulus = {
     category: 'customWheel';
     obj_type: 'manual';
+    origin_center: true,
     startX: number;
     startY: number;
     outerRadius: number;

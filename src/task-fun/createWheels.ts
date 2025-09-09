@@ -16,6 +16,7 @@ export function createColorWheel(
       obj_type: "manual",
       startX, // This is the x-coordinate of the center of the wheel
       startY, // This is the y-coordinate of the center of the wheel
+      origin_center: true,
       outerRadius,
       innerRadius,
       offset, // Offset in degrees -> I use this so that the color wheel does not always have the same layout. It's important to match this number with the "invisible" color wheel that a participant selects from when they move the mouse around the stimulus.
@@ -56,6 +57,7 @@ export function createOrientationWheel(
         obj_type: 'manual', // Ensure this matches your registration
         startX,
         startY,
+        origin_center: true,
         outerRadius,
         innerRadius,
         offset, // No offset for orientation wheel
