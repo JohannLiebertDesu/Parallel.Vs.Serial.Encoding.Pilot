@@ -99,7 +99,7 @@ export function seedCalibrationBlock(
     errTolDeg: _opts?.errTolDeg ?? 30,
     upStep:    _opts?.upStep    ?? 1,
     downStep:  _opts?.downStep  ?? 3,
-    minMs:     _opts?.minMs     ?? 20,
+    minMs:     _opts?.minMs     ?? 10,
     maxMs:     _opts?.maxMs     ?? 500,
     stabilityWindow: _opts?.stabilityWindow ?? 20,
     stabilityTol:    _opts?.stabilityTol    ?? 0.05,

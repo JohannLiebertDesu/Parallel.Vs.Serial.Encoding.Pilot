@@ -1,6 +1,6 @@
 import { BlockConfig } from "./fullTrial";
 
-const assumedHz = 60 // frames per second
+const assumedHz = 144 // frames per second
 const fixationDuration = 0.5 // in seconds
 const fixationFrameCount = Math.ceil(assumedHz * fixationDuration)
 const maskDuration = 0.05 // in seconds

@@ -52,12 +52,12 @@ var timeline: any[] = [];
 
 timeline.push(fullMode_screen)
 seedCalibrationBlock(timeline, block1, {
-  maxTrials: 30,
+  maxTrials: 50,
   startMs: 80,
-  errTolDeg: 30,
-  upStep: 1,
-  downStep: 3,
-  minMs: 20,
+  errTolDeg: 25,
+  upStep: 4,
+  downStep: 1,
+  minMs: 10,
   maxMs: 500,
 });
 
