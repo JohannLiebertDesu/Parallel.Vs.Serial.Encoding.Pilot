@@ -5,155 +5,94 @@
 
 import psychophysics                       from "@kurokida/jspsych-psychophysics";
 import { jsPsych }                         from "../jsp";
-import { createColorWheel,
-         createOrientationWheel }          from "../task-fun/createWheels";
+import { createColorWheel}                 from "../task-fun/createWheels";
+import { colorconversion }                 from "../task-fun/colorConversion";
 
-import { Stimulus,
-         LineStimulus,
-         CircleStimulus,
-         WheelStimulus }                   from "../task-fun/defineStimuli";
-import { StimulusKind }                    from "../task-fun/placeStimuli";
 
-/* ─────────── type guards ─────────── */
-const isCircleStimulus = (s: Stimulus): s is CircleStimulus => s.obj_type === "circle";
-const isLineStimulus   = (s: Stimulus): s is LineStimulus   => s.obj_type === "line";
+export const screenWidth = window.screen.width; // Width of the user's screen
+export const screenHeight = window.screen.height; // Height of the user's screen
+export const centerX = screenWidth / 2;
+export const centerY = screenHeight / 2;
 
-/* ─────────── wheel helpers ───────── */
-function makeColorWheelForProbe(c: CircleStimulus): WheelStimulus {
-  const { startX, startY, radius } = c;
-  const offset = Math.floor(Math.random() * 360);
-  return createColorWheel(startX, startY, radius * 2.7, radius * 1.836, offset);
-}
-function makeOrientationWheelForProbe(c: CircleStimulus): WheelStimulus {
-  const { startX, startY, radius } = c;
-  return createOrientationWheel(startX, startY, radius * 2.7, radius * 1.836, 0);
-}
+const signedDiff360 = (a: number, b: number) => (((a - b + 540) % 360) - 180);
 
-/* ─────────── factory ─────────── */
+// Factory
 export function featureRecall(
   trialID: number,
   blockID: number,
   practice: boolean,
-  numCircles: 3 | 6,
-  grouping: "combined" | "split",
-  composition: "homogeneous_color" | "homogeneous_orientation" | "mixed",
-  layout: "clustered" | "interleaved",
-  stimulusTypeShownFirst: StimulusKind,
-  forcedFirstKind?: StimulusKind
+  startX: number,
+  startY: number,
+  width: number,
+  height: number,
+  wheelOuterRadius: number,
+  wheelInnerRadius: number,
+  initHue: number,
+  L = 1, 
+  C = 0,
 ): any[] {
 
-  /* helper that builds ONE recall screen -------------------------- */
-  const makeRecallTrial = (probeIndex: 1 | 2) => {
+  const wheelOffset = Math.random() * 360;
 
-    /* closure variables shared with the mouse handler */
-    let orientedLine : LineStimulus   | undefined;
-    let coloredCircle: CircleStimulus | undefined;
-    let colorWheel   : WheelStimulus  | undefined;
-    let anchorCircle : CircleStimulus;
+  const wheel = createColorWheel(centerX, centerY, wheelOuterRadius, wheelInnerRadius, wheelOffset);
 
-    return {
-      type            : psychophysics,
-      response_type   : "mouse",
-      background_color: "#FFFFFF",
-      post_trial_gap  : probeIndex === 1 ? 100 : 1000,
+  let selectedHue: number;
 
-      stimuli: () => {
-        // 1) fetch sample-phase stimuli for THIS logical trial
-        const sampleRows = jsPsych.data.get().filter({
-          trialID, blockID, practice, trialSegment: "displayStimuli"
-        });
-        const allStimuli: Stimulus[] = sampleRows.values().flatMap((r: any) => r.stimuliData);
-      
-        const logicalItem = allStimuli.filter(
-          s => s.test_status === (probeIndex === 1 ? "tested_first" : "tested_second")
-        );
-      
-        // 2) anchor + wheel
-        const isOrientation = logicalItem.some(isLineStimulus);
-      
-        const anchorCircle = (isOrientation
-          ? logicalItem.find(s =>
-              isCircleStimulus(s) && (s as CircleStimulus).fill_color === "transparent"
-            ) ?? logicalItem.find(isCircleStimulus)
-          : logicalItem.find(isCircleStimulus)) as CircleStimulus;
-      
-        if (!anchorCircle) throw new Error("Could not locate anchor circle for wheel creation.");
-      
-        const wheelStim = isOrientation
-          ? makeOrientationWheelForProbe(anchorCircle)
-          : makeColorWheelForProbe(anchorCircle);
-      
-        // 3) RETURN display copies that hide the answer until mouse moves
-        const displayItem: Stimulus[] = logicalItem.map((obj): Stimulus => {
-          if (isLineStimulus(obj)) {
-            // collapse the line to hide orientation
-            const o = obj as LineStimulus;
-            return { ...o, x2: o.x1, y2: o.y1 };
-          }
-          if (isCircleStimulus(obj)) {
-            // neutral circle (no informative color) for both trial types
-            const o = obj as CircleStimulus;
-            return { ...o, fill_color: "transparent", line_color: "#000000" };
-          }
-          // fallback (shouldn't happen here): just return the object as-is, no spread
-          return obj as Stimulus;
-        });
-        
-      
-        return [...displayItem, { ...wheelStim }];
-      },
-
-      /* ---------------- mouse handler --------------------------- */
-      mouse_move_func(ev: MouseEvent) {
-        const t: any = jsPsych.getCurrentTrial();          // jsPsych v7
-        const live = t.stim_array as any[];                // plugin's live copies
-      
-        // locate the live objects currently on canvas for this recall screen
-        const liveWheel  = live.find(s => s.obj_type === "manual" && s.category === "customWheel");
-        const liveCircle = live.find(isCircleStimulus);
-        const liveLine   = live.find(isLineStimulus);
-      
-        console.log("line properties", liveLine);
-        // anchor geometry comes from the circle (center + radius)
-        const cx = liveCircle ? liveCircle.startX : undefined;
-        const cy = liveCircle ? liveCircle.startY : undefined;
-        const R  = liveCircle ? liveCircle.radius : undefined;
-      
-        const { offsetX, offsetY } = ev;
-      
-        // ORIENTATION TRIAL (line present)
-        if (liveLine && cx !== undefined && cy !== undefined && R !== undefined) {
-          // compute mouse angle around the anchor center
-          const rad = Math.atan2(offsetY - cy, offsetX - cx);
-      
-          liveLine.x2 = liveLine.x1 + R * Math.cos(rad);
-          liveLine.y2 = liveLine.y1 + R * Math.sin(rad);
-
-          return;
-        }
-      
-        // COLOR TRIAL (no line, but circle + wheel present)
-        if (liveCircle && liveWheel && cx !== undefined && cy !== undefined) {
-          let deg = Math.atan2(offsetY - cy, offsetX - cx) * 180 / Math.PI;
-          if (deg < 0) deg += 360;
-          deg = (deg + (liveWheel.offset ?? 0)) % 360;
-      
-          const hsl = `hsl(${deg}, 80%, 50%)`;
-          liveCircle.fill_color = hsl;
-          liveCircle.line_color = hsl;
-        }
-      },
-      /* ---------------- bookkeeping ----------------------------- */
-      data: {
-        trialID, blockID, practice,
-        numCircles, grouping, composition, layout,
-        probeIndex,
-        trialSegment: "featureRecall",
-        stimulusTypeShownFirst, forcedFirstKind
-      }
-    };
+  const patch = {
+    obj_type: "rect",
+    centerX,
+    centerY,
+    origin_center: false,
+    width: width,
+    height: height,
+    line_color: colorconversion({ l: L, c: C, h: 0 }),
+    fill_color: colorconversion({ l: L, c: C, h: 0 }),
   };
 
-  /* return the two probes ---------------------------------------- */
-  return [ makeRecallTrial(1), makeRecallTrial(2) ];
+  const trial: any = {
+    type: psychophysics,
+    response_type: "mouse",
+    stimuli: [wheel, patch],
+
+    mouse_move_func(ev: MouseEvent) {
+          
+      const t:any = jsPsych.getCurrentTrial();
+      const live = t.stim_array as any[];
+
+      const liveWheel = live.find(s => s.category === "customWheel");
+      const livePatch = live.find(s => s.obj_type === "rect");
+      if (!liveWheel || !livePatch) return;
+
+      const cx = liveWheel.currentX ?? liveWheel.startX;
+      const cy = liveWheel.currentY ?? liveWheel.startY;
+
+      const dx = ev.offsetX - cx;
+      const dy = ev.offsetY - cy;
+
+      // angle in [0, 360)
+      let deg = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (deg < 0) deg += 360;
+
+      // remove wheel offset so 0° is canonical wheel 0°
+      const hue = (deg - wheelOffset + 360) % 360;
+      selectedHue = hue;
+
+      const col = colorconversion({ l: 0.6, c: 0.1, h: hue });
+      livePatch.fill_color = col;
+      livePatch.line_color = col;
+    },
+
+    on_finish: (data: any) => {
+      data.trialID              = trialID;
+      data.blockID              = blockID;
+      data.practice             = practice;
+      data.trialSegment         = "featureRecall";
+
+      data.wheelOffset_deg      = wheelOffset;
+      data.target_color_deg     = initHue;
+      data.selected_color_deg   = selectedHue;
+      data.signed_error_deg     = signedDiff360(selectedHue, initHue);
+    },
+  };
+  return [trial];
 }

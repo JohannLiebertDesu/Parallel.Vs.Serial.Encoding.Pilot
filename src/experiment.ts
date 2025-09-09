@@ -27,7 +27,10 @@ import { survey_screen } from "./ending/questionnaire";
 import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import jsPsychCallFunction from '@jspsych/plugin-call-function';
-import { buildExperimentNode } from "./trials/runExperiment";
+import { buildBlock } from "./trials/fullTrial"
+import psychophysics from "@kurokida/jspsych-psychophysics";
+import {block1 } from "./trials/runExperiment"
+
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -41,55 +44,63 @@ export async function run({
   title,
   version,
 }) {
-  // Initialize a timeline to hold the trials
-  var timeline: any[] = [];
 
-  // Preload assets
-  const preloadSlides = {
-    type: preload,
-    max_load_time: 1000,
-    images: [
-      "assets/instructionImages/Slide1.gif",
-      "assets/instructionImages/Slide2.gif",
-      "assets/instructionImages/Slide3.gif",
-      "assets/instructionImages/Slide4.gif",
-      "assets/instructionImages/Slide5.gif",
-      "assets/instructionImages/Slide6.gif"
-    ]
-  };
+// Initialize a timeline to hold the trials
+var timeline: any[] = [];
+
+
+
+buildBlock(timeline, block1);
+
+
+
+
+
+  // // Preload assets
+  // const preloadSlides = {
+  //   type: preload,
+  //   max_load_time: 1000,
+  //   images: [
+  //     "assets/instructionImages/Slide1.gif",
+  //     "assets/instructionImages/Slide2.gif",
+  //     "assets/instructionImages/Slide3.gif",
+  //     "assets/instructionImages/Slide4.gif",
+  //     "assets/instructionImages/Slide5.gif",
+  //     "assets/instructionImages/Slide6.gif"
+  //   ]
+  // };
 
   /* pre-task screens */
-  timeline.push(
-    preloadSlides,
-    welcome_screen,
-    consent_screen,
-    notice_screen,
-    fullMode_screen,
-    browser_screen,
-    instructionSlidesConfig,      
-  );
+  // timeline.push(
+  //   welcome_screen,
+  //   consent_screen,
+  //   notice_screen,
+  //   fullMode_screen,
+  //   browser_screen,
+  //   instructionSlidesConfig,      
+  // );
 
-  timeline.push({
-    type: jsPsychCallFunction,
-    async: true,                         // ← tell jsPsych to wait
-    func: async (done) => {              // ← done = resume button
-      const participantID = await initializeAndAssignSubjectID();
-      jsPsych.data.addProperties({ subject: participantID });
+  // timeline.push({
+  //   type: jsPsychCallFunction,
+  //   async: true,                         // ← tell jsPsych to wait
+  //   func: async (done) => {              // ← done = resume button
+  //     const participantID = await initializeAndAssignSubjectID();
+  //     jsPsych.data.addProperties({ subject: participantID });
   
-      const expNode = buildExperimentNode(participantID);
+  //     const expNode = buildExperimentNode(participantID);
   
-      jsPsych.addNodeToEndOfTimeline({
-        timeline: [
-          expNode,                       // task
-          survey_screen,                 // post-task screens
-          debrief_screen,
-          closeFullScreen,
-        ],
-      });
+  //     jsPsych.addNodeToEndOfTimeline({
+  //       timeline: [
+  //         expNode,                       // task
+  //         survey_screen,                 // post-task screens
+  //         debrief_screen,
+  //         closeFullScreen,
+  //       ],
+  //     });
   
-      done();                            // ← now jsPsych may continue
-    },
-  });
+  //     done();                            // ← now jsPsych may continue
+  //   },
+  // });
   
   await jsPsych.run(timeline);
 }
