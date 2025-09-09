@@ -1,5 +1,5 @@
 /**
- * @title DualSet Interference Exp3
+ * @title Parallel Vs Serial Encoding Pilot
  * @description Inspecting the impact of a random vs an ABBA testing sequence on dual-set interference in WM
  * @author Noah Rischert, Chenyu Li and Hannah (Dames) Tschannen
  * @version 0.3.2
@@ -50,9 +50,9 @@ export async function run({
 var timeline: any[] = [];
 
 
-
+timeline.push(fullMode_screen)
 seedCalibrationBlock(timeline, block1, {
-  maxTrials: 50,
+  maxTrials: 30,
   startMs: 80,
   errTolDeg: 30,
   upStep: 1,

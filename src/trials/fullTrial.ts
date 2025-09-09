@@ -72,7 +72,8 @@ export function pushTrial(
       initHue,
       rotation,
       cfg.deg_per_frame,
-      cfg.stimuliFrameCount
+      cfg.stimuliFrameCount,
+      trialDuration
     )
   );
   timeline.push({

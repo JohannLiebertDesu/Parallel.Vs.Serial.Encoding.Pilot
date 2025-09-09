@@ -12,7 +12,7 @@ setCSS();
 
 export const expInfo = {
   // settings for the experiment
-  TITLE: "DualSet.Interference.Exp3",
+  TITLE: "Parallel.Vs.Serial.Encoding.pilot",
   LANG: "en", // the default language of the experiment
 
   // design of the experiment
