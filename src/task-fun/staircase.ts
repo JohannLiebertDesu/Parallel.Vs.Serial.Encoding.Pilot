@@ -22,7 +22,7 @@ export class Staircase {
     this.down = opts.down ?? 3;          // 3-down  → ~75%
     this.min = Math.max(1, opts.minFrames ?? 1);
     this.max = Math.max(this.min, opts.maxFrames ?? 60);
-    this.pTarget = opts.pTarget ?? 0.75;
+    this.pTarget = opts.pTarget ?? 0.8;
   }
 
   current() { return this.level; }

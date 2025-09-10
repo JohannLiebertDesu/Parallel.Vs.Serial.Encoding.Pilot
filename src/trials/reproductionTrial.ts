@@ -15,6 +15,7 @@ export function featureRecall(
   trialID: number,
   blockID: number,
   practice: boolean,
+  calibrationTrial: boolean,
   startX: number,
   startY: number,
   width: number,
@@ -26,6 +27,7 @@ export function featureRecall(
   deg_per_frame: number,
   stimuliFrameCount: number,
   trialDuration: number,
+  assumedHz: number,
   L = 1, 
   C = 0,
 ): any[] {
@@ -85,6 +87,7 @@ export function featureRecall(
       data.trialID              = trialID;
       data.blockID              = blockID;
       data.practice             = practice;
+      data.calibrationTrial     = calibrationTrial;
       data.trialSegment         = "featureRecall";
       data.trialDuration        = trialDuration;
 
@@ -96,6 +99,7 @@ export function featureRecall(
       data.abs_error_deg        = Math.abs(data.signed_error_deg);
       data.deg_per_frame        = deg_per_frame;
       data.stimuliFrameCount    = stimuliFrameCount;
+      data.stimuliMsCount       = Math.round((stimuliFrameCount / assumedHz) * 1000)
       data.total_drift_deg      = dir * (stimuliFrameCount - 1) * deg_per_frame;
       data.rotation             = rotation;
     },

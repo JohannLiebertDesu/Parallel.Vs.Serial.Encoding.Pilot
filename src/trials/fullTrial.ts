@@ -31,6 +31,7 @@ export interface BlockConfig {
 export function pushTrial(
   timeline: any[],
   cfg: BlockConfig,
+  calibrationTrial: boolean,
   trialID: number
 ): void {
   const initHue = Math.random() * 360;
@@ -42,6 +43,7 @@ export function pushTrial(
       trialID,
       cfg.blockID,
       cfg.practice,
+      calibrationTrial,
       cfg.startX,
       cfg.startY,
       cfg.width,
@@ -63,6 +65,7 @@ export function pushTrial(
       trialID,
       cfg.blockID,
       cfg.practice,
+      calibrationTrial,
       cfg.startX,
       cfg.startY,
       cfg.width,
@@ -73,7 +76,8 @@ export function pushTrial(
       rotation,
       cfg.deg_per_frame,
       cfg.stimuliFrameCount,
-      trialDuration
+      trialDuration,
+      cfg.assumedHz
     )
   );
   timeline.push({
@@ -90,8 +94,8 @@ export function pushTrial(
 );
 }
 
-export function buildBlock(timeline: any[], cfg: BlockConfig): void {
+export function buildBlock(timeline: any[], cfg: BlockConfig, calibrationTrial): void {
   for (let t = 1; t <= cfg.trialsPerBlock; t++) {
-    pushTrial(timeline, cfg, t);
+    pushTrial(timeline, cfg, calibrationTrial, t);
   }
 }

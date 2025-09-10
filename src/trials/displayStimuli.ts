@@ -6,6 +6,7 @@ export function displayStimuli(
   trialID: number,
   blockID: number,
   practice: boolean,
+  calibrationTrial: boolean,
   startX: number,
   startY: number,
   width: number,
@@ -30,8 +31,10 @@ export function displayStimuli(
     trial_duration: trialDuration,
     data: {
       trialID, blockID, practice,
+      calibrationTrial: calibrationTrial,
       trialSegment: "stimuliPresentation",
       deg_per_frame: deg_per_frame,
+      stimuliFrameCount: stimuliFrameCount,
       rotation: rotation,
       trialDuration: trialDuration
       }

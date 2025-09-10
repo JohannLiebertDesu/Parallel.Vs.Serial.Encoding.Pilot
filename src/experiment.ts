@@ -51,14 +51,15 @@ var timeline: any[] = [];
 
 
 timeline.push(fullMode_screen)
-seedCalibrationBlock(timeline, block1, {
+
+seedCalibrationBlock(timeline, block1, true, {
   maxTrials: 50,
   startMs: 80,
-  errTolDeg: 25,
+  errTolDeg: 30,
   upStep: 4,
   downStep: 1,
-  minMs: 10,
-  maxMs: 500,
+  minMs: 5,
+  maxMs: 200,
 });
 
 // buildBlock(timeline, block2);  // etc.

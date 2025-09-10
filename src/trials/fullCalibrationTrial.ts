@@ -1,4 +1,4 @@
-// fullTrial.ts (additions)
+// fullCalibrationTrial.ts (additions)
 import { jsPsych } from "../jsp";
 import { Staircase } from "../task-fun/staircase";
 import { displayStimuli } from "./displayStimuli";
@@ -11,8 +11,8 @@ type CalibOpts = {
   maxTrials?: number;            // default 50
   startMs?: number;              // default 80 ms
   errTolDeg?: number;            // default ±30°
-  upStep?: number;               // default 1 frame up on error
-  downStep?: number;             // default 3 frames down on correct
+  upStep?: number;               // default 4 frame up on error
+  downStep?: number;             // default 1 frames down on correct
   minMs?: number;                // clamp lower bound
   maxMs?: number;                // clamp upper bound
   stabilityWindow?: number;      // for monitoring
@@ -23,6 +23,7 @@ type CalibOpts = {
 function makeCalibrationTriplet(
   trialID: number,
   cfg: BlockConfig,
+  calibrationTrial: true,
   frames: number,
   opts: Required<CalibOpts>,
   stair: Staircase
@@ -35,7 +36,7 @@ function makeCalibrationTriplet(
 
   // 1) Sample/mask/fixation with THIS frames level
   const sample = displayStimuli(
-    trialID, cfg.blockID, cfg.practice,
+    trialID, cfg.blockID, cfg.practice, calibrationTrial,
     cfg.startX, cfg.startY, cfg.width, cfg.height,
     initHue, rotation, cfg.deg_per_frame, // (0 for calibration)
     frames, cfg.maskFrameCount, totalFrameCount, trialDurationMs, cfg.tile
@@ -43,11 +44,11 @@ function makeCalibrationTriplet(
 
   // 2) Recall
   const recall = featureRecall(
-    trialID, cfg.blockID, cfg.practice,
+    trialID, cfg.blockID, cfg.practice, calibrationTrial,
     cfg.startX, cfg.startY, cfg.width, cfg.height,
     cfg.wheelOuterRadius, cfg.wheelInnerRadius,
     initHue, rotation, cfg.deg_per_frame,
-    frames, trialDurationMs
+    frames, trialDurationMs, cfg.assumedHz
   )[0];
 
   // Wrap recall.on_finish to evaluate correctness + update staircase
@@ -55,22 +56,26 @@ function makeCalibrationTriplet(
   recall.on_finish = (data: any) => {
     if (prevFinish) prevFinish(data);
 
-    const errAbs = Math.abs(data.signed_error_deg);
-    const correct = errAbs <= opts.errTolDeg;
+    const errAbs = data.abs_error_deg
+    const correct = errAbs <= opts.errTolDeg
 
     // Annotate
-    data.calibration = true;
     data.isCorrect   = correct;
-    data.stimFrames  = frames;
-    data.stimMs      = Math.round((frames / cfg.assumedHz) * 1000);
-    data.targetAcc   = 0.75;
+    data.targetAcc   = opts.upStep / (opts.upStep + opts.downStep);
 
     // Update staircase *now* and append next triplet if we still have trials left
     stair.update(correct);
 
-    if (trialID < opts.maxTrials) {
-      const nextFrames = stair.current();
-      const nextTriplet = makeCalibrationTriplet(trialID + 1, cfg, nextFrames, opts, stair);
+    const acc20   = stair.accLast(20);          // rolling acc over last 20
+    const stable  = stair.isStable(20, 0.05);   // within ±5% of pTarget & ≥4 reversals
+
+    // Log for later analysis
+    data.rollingAcc20   = acc20;
+    data.reversals      = stair.reversals;
+    data.stableFlag     = stable;
+
+    if (trialID < opts.maxTrials && !stable) {
+      const nextTriplet = makeCalibrationTriplet(trialID + 1, cfg, calibrationTrial, stair.current(), opts, stair);
       jsPsych.addNodeToEndOfTimeline({ timeline: nextTriplet });
     }
   };
@@ -81,7 +86,7 @@ function makeCalibrationTriplet(
     stimuli: [createITI(cfg.startX, cfg.startY)],
     response_ends_trial: false,
     trial_duration: cfg.ITIduration,
-    data: { trialSegment: "ITI", blockID: cfg.blockID, trialID, practice: cfg.practice }
+    data: { trialSegment: "ITI", blockID: cfg.blockID, trialID, practice: cfg.practice, calibrationTrial }
   };
 
   return [sample, recall, iti];
@@ -91,15 +96,16 @@ function makeCalibrationTriplet(
 export function seedCalibrationBlock(
   timeline: any[],
   cfg: BlockConfig,
+  calibrationTrial: true,
   _opts?: CalibOpts
 ) {
   const opts: Required<CalibOpts> = {
     maxTrials: _opts?.maxTrials ?? 50,
     startMs:   _opts?.startMs   ?? 80,
     errTolDeg: _opts?.errTolDeg ?? 30,
-    upStep:    _opts?.upStep    ?? 1,
-    downStep:  _opts?.downStep  ?? 3,
-    minMs:     _opts?.minMs     ?? 10,
+    upStep:    _opts?.upStep    ?? 4,
+    downStep:  _opts?.downStep  ?? 1,
+    minMs:     _opts?.minMs     ?? 5,
     maxMs:     _opts?.maxMs     ?? 500,
     stabilityWindow: _opts?.stabilityWindow ?? 20,
     stabilityTol:    _opts?.stabilityTol    ?? 0.05,
@@ -111,9 +117,9 @@ export function seedCalibrationBlock(
 
   const stair = new Staircase({
     startFrames, up: opts.upStep, down: opts.downStep,
-    minFrames, maxFrames, pTarget: 0.75
+    minFrames, maxFrames, pTarget: opts.upStep / (opts.upStep + opts.downStep)
   });
 
-  const firstTriplet = makeCalibrationTriplet(1, cfg, stair.current(), opts, stair);
+  const firstTriplet = makeCalibrationTriplet(1, cfg, calibrationTrial, stair.current(), opts, stair);
   timeline.push(...firstTriplet);
 }
