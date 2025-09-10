@@ -53,7 +53,7 @@ var timeline: any[] = [];
 timeline.push(fullMode_screen)
 
 seedCalibrationBlock(timeline, block1, true, {
-  maxTrials: 50,
+  maxTrials: 120,
   startMs: 80,
   errTolDeg: 30,
   upStep: 4,
