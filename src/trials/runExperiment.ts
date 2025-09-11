@@ -9,18 +9,20 @@ const maskDuration = 0.05 // in seconds
 const maskFrameCount = Math.ceil(assumedHz * maskDuration)
 const possibleDegPerFrame = [0, 5, 10, 15]
 const startDurationStimuli = 0.08 //s = 80ms
-const width = 300
-const height = 300
-const wheelOuterRadius = 450
-const wheelInnerRadius = 350
+const width = 250
+const height = 250
+const wheelOuterRadius = 300
+const wheelInnerRadius = 200
 const ITIduration = 2000
 const tile = 4
-const triangleRadius = 250
+const triangleRadius = 225
+const startX = 0
+const startY = 0
 
   // ----- Configure one block (edit to taste) -----
   export const block1: BlockConfig = {
-    startX: 0,
-    startY: 0,
+    startX: startX,
+    startY: startY,
     width: width,
     height: height,
     deg_per_frame: possibleDegPerFrame[0],      // hue step per frame
@@ -50,11 +52,11 @@ const triangleRadius = 250
 
 
     export const block2: BlockConfig = {
-    startX: 0,
-    startY: 0,
+    startX: startX,
+    startY: startY,
     width: width,
     height: height,
-    deg_per_frame: 10,      // hue step per frame
+    deg_per_frame: 50,      // hue step per frame
     stimuliFrameCount: 3,
     maskFrameCount: maskFrameCount,
     fixationFrameCount: fixationFrameCount,
@@ -66,7 +68,7 @@ const triangleRadius = 250
 
     ITIduration: ITIduration,
 
-    blockID: 1,
+    blockID: 2,
     practice: false,
     trialsPerBlock: 10,
 

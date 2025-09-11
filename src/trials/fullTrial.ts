@@ -27,8 +27,8 @@ export interface BlockConfig {
   practice: boolean;
   trialsPerBlock: number;   // e.g., 20
 
-  triangleRadius,       // NEW
-  nColoredSquares       // NEW
+  triangleRadius: number,     
+  nColoredSquares: number,     
 
   chroma: number,
   lightness: number,
@@ -47,12 +47,20 @@ export function pushTrial(
   const totalFrameCount = cfg.stimuliFrameCount + cfg.maskFrameCount + cfg.fixationFrameCount;
   const trialDuration = Math.ceil((totalFrameCount / cfg.assumedHz) * 1000)
 
-  // random global rotation of the (hidden) triangle each trial
+  // 3 vertex centers (random global rotation each trial)
   const angleDeg = Math.random() * 360;
-  // 3 vertex centers
   const verts = equilateralVertices(cfg.startX, cfg.startY, cfg.triangleRadius, angleDeg);
+
   // Which indices are colored this trial?
   const coloredIdx = new Set(pickK(3, cfg.nColoredSquares));
+
+  // (1) one starting hue per square, shared by display & recall
+  const hueStarts = verts.map(() => Math.random() * 360);
+
+  // (2) choose target among colored squares; fallback to any if none colored
+  const choices = coloredIdx.size ? Array.from(coloredIdx) : [0, 1, 2];
+  const targetIdx = choices[Math.floor(Math.random() * choices.length)];
+
 
   timeline.push(
     ...displayStimuli(
@@ -64,7 +72,6 @@ export function pushTrial(
       cfg.startY,
       cfg.width,
       cfg.height,
-      initHue,
       rotation,
       cfg.deg_per_frame,
       cfg.stimuliFrameCount,
@@ -77,6 +84,8 @@ export function pushTrial(
       cfg.lightness,
       verts,
       coloredIdx,
+      hueStarts,
+      targetIdx,
     )
   );
 
@@ -87,13 +96,10 @@ export function pushTrial(
       cfg.blockID,
       cfg.practice,
       cfg.calibrationTrial,
-      cfg.startX,
-      cfg.startY,
       cfg.width,
       cfg.height,
       cfg.wheelOuterRadius,
       cfg.wheelInnerRadius,
-      initHue,
       rotation,
       cfg.deg_per_frame,
       cfg.stimuliFrameCount,
@@ -103,7 +109,9 @@ export function pushTrial(
       cfg.lightness,
       verts, 
       coloredIdx,
-      cfg.nColoredSquares
+      cfg.nColoredSquares,
+      hueStarts, 
+      targetIdx,
     )
   );
   timeline.push({

@@ -39,6 +39,23 @@ export function createRectObject(
   };
 }
 
+export function createCrossDuringSample(
+  startX: number, startY: number, stimuliFrameCount: number = Infinity, maskFrameCount: number = Infinity
+) {
+return {
+    obj_type: "cross",
+    startX,
+    startY,
+    origin_center: true,
+    line_color: "#000000",
+    line_length: 20,
+    line_width: 3,
+    show_start_frame: 0,                     // visible from first frame...
+    show_end_frame: stimuliFrameCount + maskFrameCount,       // ...through the sample period
+    is_frame: true
+};
+}
+
 // Static, localized color-tile mask via drawFunc
 export function createStaticTileMaskManual(
   startX: number, startY: number, width: number, height: number,

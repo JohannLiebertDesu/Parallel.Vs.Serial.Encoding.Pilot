@@ -7,7 +7,7 @@ import psychophysics                       from "@kurokida/jspsych-psychophysics
 import { jsPsych }                         from "../jsp";
 import { createColorWheel}                 from "../task-fun/createWheels";
 import { colorconversion }                 from "../task-fun/colorConversion";
-import type { Vertex } from "../task-fun/triangleHelpers"
+import type { Vertex } from "../task-fun/triangleHelpers"
 
 const signedDiff360 = (a: number, b: number) => (((a - b + 540) % 360) - 180);
 
@@ -17,43 +17,48 @@ export function featureRecall(
   blockID: number,
   practice: boolean,
   calibrationTrial: boolean,
-  startX: number,
-  startY: number,
   width: number,
   height: number,
   wheelOuterRadius: number,
   wheelInnerRadius: number,
-  initHue: number,
-  rotation: string,
+  rotation: "cw" | "ccw",
   deg_per_frame: number,
   stimuliFrameCount: number,
   trialDuration: number,
   assumedHz: number,
-  lightness: number,
   chroma: number,
+  lightness: number,
   verts: ReadonlyArray<Vertex>,
   coloredIdx: ReadonlySet<number>,
   nColoredSquares: number,
+  hueStarts: ReadonlyArray<number>,       
+  targetIdx: number,                      
 
 ): any[] {
 
   const wheelOffset = Math.random() * 360;
   const dir = rotation === "ccw" ? -1 : 1;
 
+  // Probe location = chosen square's center
+  const { x: cx, y: cy } = verts[targetIdx];
+
+  // The color that has to be recalled
+  const initHue   = hueStarts[targetIdx];
+
   let selectedHue: number;
 
   const patch = {
     obj_type: "rect",
-    startX,
-    startY,
+    startX: cx,
+    startY: cy,
     origin_center: true,
-    width: width,
-    height: height,
-    line_color: colorconversion({ l: 1, c: chroma, h: 0 }),
-    fill_color: colorconversion({ l: 1, c: chroma, h: 0 }),
+    width,
+    height,
+    line_color: colorconversion({ l: 1, c: 0, h: 0 }),
+    fill_color: colorconversion({ l: 1, c: 0, h: 0 }),
   };
 
-  const wheel = createColorWheel(startX, startY, wheelOuterRadius, wheelInnerRadius, wheelOffset, lightness, chroma);
+  const wheel = createColorWheel(cx, cy, wheelOuterRadius, wheelInnerRadius, wheelOffset, lightness, chroma);
 
   const trial: any = {
     type: psychophysics,
@@ -95,8 +100,11 @@ export function featureRecall(
       data.calibrationTrial     = calibrationTrial;
       data.trialSegment         = "featureRecall";
       data.trialDuration        = trialDuration;
-
+      data.coloredIdx           = Array.from(coloredIdx);
       data.wheelOffset_deg      = wheelOffset;
+      data.target_index         = targetIdx;
+      data.target_vertex_x      = cx;
+      data.target_vertex_y      = cy;
       data.target_color_deg     = initHue;
       data.selected_color_deg   = selectedHue;
       data.signed_error_deg     = signedDiff360(selectedHue, initHue);
