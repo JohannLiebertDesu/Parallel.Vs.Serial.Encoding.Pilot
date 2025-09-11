@@ -1,57 +1,82 @@
 import { BlockConfig } from "./fullTrial";
 
-const assumedHz = 144 // frames per second
+const chroma = 0.1
+const lightness = 0.7
+const assumedHz = 60 // frames per second
 const fixationDuration = 0.5 // in seconds
 const fixationFrameCount = Math.ceil(assumedHz * fixationDuration)
 const maskDuration = 0.05 // in seconds
 const maskFrameCount = Math.ceil(assumedHz * maskDuration)
 const possibleDegPerFrame = [0, 5, 10, 15]
 const startDurationStimuli = 0.08 //s = 80ms
+const width = 300
+const height = 300
+const wheelOuterRadius = 450
+const wheelInnerRadius = 350
+const ITIduration = 2000
+const tile = 4
+const triangleRadius = 250
 
   // ----- Configure one block (edit to taste) -----
   export const block1: BlockConfig = {
     startX: 0,
     startY: 0,
-    width: 200,
-    height: 200,
+    width: width,
+    height: height,
     deg_per_frame: possibleDegPerFrame[0],      // hue step per frame
     stimuliFrameCount: 3,
     maskFrameCount: maskFrameCount,
     fixationFrameCount: fixationFrameCount,
-    tile: 4,               // tile size (px) for the mask
+    tile: tile,               // tile size (px) for the mask
     assumedHz: assumedHz,
 
-    wheelOuterRadius: 450,
-    wheelInnerRadius: 350,
+    wheelOuterRadius: wheelOuterRadius,
+    wheelInnerRadius: wheelInnerRadius,
 
-    ITIduration: 2000,
+    ITIduration: ITIduration,
 
     blockID: 1,
     practice: false,
     trialsPerBlock: 10,
+
+    triangleRadius: triangleRadius,      // distance from center to each square center
+    nColoredSquares: 1,     // 0..3: how many of the 3 are colored
+
+    chroma: chroma,
+    lightness: lightness,
+
+    calibrationTrial: true,
   };
 
 
     export const block2: BlockConfig = {
     startX: 0,
     startY: 0,
-    width: 200,
-    height: 200,
+    width: width,
+    height: height,
     deg_per_frame: 10,      // hue step per frame
     stimuliFrameCount: 3,
     maskFrameCount: maskFrameCount,
     fixationFrameCount: fixationFrameCount,
-    tile: 4,               // tile size (px) for the mask
+    tile: tile,               // tile size (px) for the mask
     assumedHz: assumedHz,
 
-    wheelOuterRadius: 450,
-    wheelInnerRadius: 350,
+    wheelOuterRadius: wheelOuterRadius,
+    wheelInnerRadius: wheelInnerRadius,
 
-    ITIduration: 2000,
+    ITIduration: ITIduration,
 
     blockID: 1,
     practice: false,
     trialsPerBlock: 10,
+
+    triangleRadius: triangleRadius,      // distance from center to each square center
+    nColoredSquares: 1,     // 0..3: how many of the 3 are colored
+
+    chroma: chroma,
+    lightness: lightness,
+
+    calibrationTrial: false,
   };
 
 // /**

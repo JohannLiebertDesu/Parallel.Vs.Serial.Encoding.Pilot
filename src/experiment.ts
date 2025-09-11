@@ -30,7 +30,7 @@ import jsPsychCallFunction from '@jspsych/plugin-call-function';
 import { buildBlock } from "./trials/fullTrial"
 import { seedCalibrationBlock } from "./trials/fullCalibrationTrial";
 import psychophysics from "@kurokida/jspsych-psychophysics";
-import {block1 } from "./trials/runExperiment"
+import {block1, block2 } from "./trials/runExperiment"
 
 
 /**
@@ -52,18 +52,17 @@ var timeline: any[] = [];
 
 timeline.push(fullMode_screen)
 
-seedCalibrationBlock(timeline, block1, true, {
-  maxTrials: 120,
-  startMs: 80,
-  errTolDeg: 30,
-  upStep: 4,
-  downStep: 1,
-  minMs: 5,
-  maxMs: 200,
-});
+// seedCalibrationBlock(timeline, block1, {
+//   maxTrials: 100,
+//   startMs: 80,
+//   errTolDeg: 30,
+//   upStep: 4,
+//   downStep: 1,
+//   minMs: 5,
+//   maxMs: 200,
+// });
 
-// buildBlock(timeline, block2);  // etc.
-
+buildBlock(timeline, block2);  
 
 
 

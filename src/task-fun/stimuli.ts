@@ -3,11 +3,13 @@ import { colorconversion } from "./colorConversion";
 
 export function createRectObject(
   startX: number, startY: number, hueStart: number, width: number, height: number,
-  rotation: "cw" | "ccw" = "cw", deg_per_frame: number, L = 0.6, C = 0.1,
-  stimuliFrameCount: number = Infinity
+  rotation: "cw" | "ccw" = "cw", deg_per_frame: number, lightness: number, chroma: number,
+  stimuliFrameCount: number = Infinity, mode: 'colored' | 'outline' = 'colored'
 ) {
   const dir = rotation === "ccw" ? -1 : 1;
   const wrapHue = (h: number) => ((h % 360) + 360) % 360;
+
+  const initColor = colorconversion({ l: lightness, c: chroma, h: wrapHue(hueStart)});
 
   return {
     obj_type: "rect",
@@ -16,13 +18,16 @@ export function createRectObject(
     origin_center: true,
     width,
     height,
-    line_color: colorconversion({ l: L, c: C, h: wrapHue(hueStart) }),
-    fill_color: colorconversion({ l: L, c: C, h: wrapHue(hueStart) }),
+    // initial colors
+    line_color: mode === 'outline' ? "#000000" : initColor,
+    // transparent fill if outline
+    fill_color: mode === 'outline' ? "rgba(0,0,0,0)" : initColor,
 
     // (stim, elapsedMs, frameCount)
     change_attr(stim: any, _times: number, frames: number) {
+      if (mode === 'outline') return; // no animation for outline
       const h = wrapHue(hueStart + dir * frames * deg_per_frame);
-      const col = colorconversion({ l: L, c: C, h });
+      const col = colorconversion({ l: lightness, c: chroma, h });
       stim.fill_color = col;
       stim.line_color = col;
     },
@@ -37,7 +42,7 @@ export function createRectObject(
 // Static, localized color-tile mask via drawFunc
 export function createStaticTileMaskManual(
   startX: number, startY: number, width: number, height: number,
-  tile: number, L = 0.6, C = 0.1,
+  tile: number, lightness: number, chroma: number,
   stimuliFrameCount: number = Infinity,  // when to start (in frames)
   maskFrameCount: number = Infinity      // how many frames to show
 ) {
@@ -48,7 +53,7 @@ export function createStaticTileMaskManual(
 
   const colors = Array.from({ length: nCols * nRows }, () => {
     const h = Math.random() * 360;
-    return colorconversion({ l: L, c: C, h });
+    return colorconversion({ l: lightness, c: chroma, h });
   });
 
   return {

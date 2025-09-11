@@ -5,6 +5,7 @@ import { displayStimuli } from "./displayStimuli";
 import { featureRecall } from "./reproductionTrial";
 import { createITI } from "../task-fun/stimuli";
 import { BlockConfig } from "./fullTrial";
+import { equilateralVertices, pickK } from "../task-fun/triangleHelpers";
 import psychophysics from "@kurokida/jspsych-psychophysics";
 
 type CalibOpts = {
@@ -23,7 +24,6 @@ type CalibOpts = {
 function makeCalibrationTriplet(
   trialID: number,
   cfg: BlockConfig,
-  calibrationTrial: true,
   frames: number,
   opts: Required<CalibOpts>,
   stair: Staircase
@@ -34,22 +34,28 @@ function makeCalibrationTriplet(
   const initHue = Math.random() * 360;
   const rotation: "cw" | "ccw" = Math.random() < 0.5 ? "cw" : "ccw";
 
+  // random global rotation of the (hidden) triangle each trial
+  const angleDeg = Math.random() * 360;
+  // 3 vertex centers
+  const verts = equilateralVertices(cfg.startX, cfg.startY, cfg.triangleRadius, angleDeg);
+  // Which indices are colored this trial?
+  const coloredIdx = new Set(pickK(3, cfg.nColoredSquares));
+  
   // 1) Sample/mask/fixation with THIS frames level
   const sample = displayStimuli(
-    trialID, cfg.blockID, cfg.practice, calibrationTrial,
+    trialID, cfg.blockID, cfg.practice, cfg.calibrationTrial,
     cfg.startX, cfg.startY, cfg.width, cfg.height,
     initHue, rotation, cfg.deg_per_frame, // (0 for calibration)
-    frames, cfg.maskFrameCount, totalFrameCount, trialDurationMs, cfg.tile
-  )[0];
+    frames, cfg.maskFrameCount, totalFrameCount, trialDurationMs, 
+    cfg.tile, cfg.nColoredSquares, cfg.chroma, cfg.lightness, verts, coloredIdx)[0];
 
   // 2) Recall
   const recall = featureRecall(
-    trialID, cfg.blockID, cfg.practice, calibrationTrial,
+    trialID, cfg.blockID, cfg.practice, cfg.calibrationTrial,
     cfg.startX, cfg.startY, cfg.width, cfg.height,
     cfg.wheelOuterRadius, cfg.wheelInnerRadius,
     initHue, rotation, cfg.deg_per_frame,
-    frames, trialDurationMs, cfg.assumedHz
-  )[0];
+    frames, trialDurationMs, cfg.assumedHz, cfg.lightness, cfg.chroma, verts, coloredIdx, cfg.nColoredSquares)[0];
 
   // Wrap recall.on_finish to evaluate correctness + update staircase
   const prevFinish = recall.on_finish;
@@ -66,19 +72,32 @@ function makeCalibrationTriplet(
     // Update staircase *now* and append next triplet if we still have trials left
     stair.update(correct);
 
-    const acc20   = stair.accLast(20);          // rolling acc over last 20
-    const stable  = stair.isStable(20, 0.05);   // within ±5% of pTarget & ≥4 reversals
+  // use your staircase defaults: n=60, tol=0.07, reversals>=8
+    const stable = stair.isStable();                    // <-- no args
+    data.rollingAcc60 = stair.accLast(60);
+    data.reversals    = stair.reversals;
+    data.stableFlag   = stable;
 
-    // Log for later analysis
-    data.rollingAcc20   = acc20;
-    data.reversals      = stair.reversals;
-    data.stableFlag     = stable;
+  // stop when stable OR when maxTrials reached
+  const shouldStop = stable || (trialID >= opts.maxTrials);
 
-    if (trialID < opts.maxTrials && !stable) {
-      const nextTriplet = makeCalibrationTriplet(trialID + 1, cfg, calibrationTrial, stair.current(), opts, stair);
-      jsPsych.addNodeToEndOfTimeline({ timeline: nextTriplet });
-    }
+  if (!shouldStop) {
+    const nextTriplet = makeCalibrationTriplet(
+      trialID + 1,
+      cfg,
+      stair.current(),     // next frames level
+      opts,
+      stair
+    );
+    jsPsych.addNodeToEndOfTimeline({ timeline: nextTriplet });
+  } else {
+    // Freeze a robust threshold (uses estimateThresholdFrames under the hood)
+    const thrFrames = stair.finalizeThreshold(6, 20);           // tweak if you like
+    const thrMs     = Math.round(1000 * thrFrames / cfg.assumedHz);
+
+    jsPsych.data.addProperties({ calib_threshold_frames: thrFrames, calib_threshold_ms: thrMs });
   };
+};
 
   // 3) ITI (left unchanged)
   const iti = {
@@ -86,9 +105,8 @@ function makeCalibrationTriplet(
     stimuli: [createITI(cfg.startX, cfg.startY)],
     response_ends_trial: false,
     trial_duration: cfg.ITIduration,
-    data: { trialSegment: "ITI", blockID: cfg.blockID, trialID, practice: cfg.practice, calibrationTrial }
+    data: { trialSegment: "ITI", blockID: cfg.blockID, trialID, practice: cfg.practice, calibrationTrial: cfg.calibrationTrial }
   };
-
   return [sample, recall, iti];
 }
 
@@ -96,7 +114,6 @@ function makeCalibrationTriplet(
 export function seedCalibrationBlock(
   timeline: any[],
   cfg: BlockConfig,
-  calibrationTrial: true,
   _opts?: CalibOpts
 ) {
   const opts: Required<CalibOpts> = {
@@ -120,6 +137,6 @@ export function seedCalibrationBlock(
     minFrames, maxFrames, pTarget: opts.upStep / (opts.upStep + opts.downStep)
   });
 
-  const firstTriplet = makeCalibrationTriplet(1, cfg, calibrationTrial, stair.current(), opts, stair);
+  const firstTriplet = makeCalibrationTriplet(1, cfg, stair.current(), opts, stair);
   timeline.push(...firstTriplet);
 }

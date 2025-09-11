@@ -2,6 +2,7 @@ import { displayStimuli } from "./displayStimuli";
 import { featureRecall } from "./reproductionTrial";
 import { createITI } from "../task-fun/stimuli"
 import psychophysics from "@kurokida/jspsych-psychophysics";
+import { equilateralVertices, pickK } from "../task-fun/triangleHelpers";
 
 
 export interface BlockConfig {
@@ -25,25 +26,40 @@ export interface BlockConfig {
   blockID: number;          // 1-based
   practice: boolean;
   trialsPerBlock: number;   // e.g., 20
+
+  triangleRadius,       // NEW
+  nColoredSquares       // NEW
+
+  chroma: number,
+  lightness: number,
+
+  calibrationTrial: boolean,
 }
 
 /** Pushes one logical trial (= sample then mask; recall later) to `timeline`. */
 export function pushTrial(
   timeline: any[],
   cfg: BlockConfig,
-  calibrationTrial: boolean,
   trialID: number
 ): void {
   const initHue = Math.random() * 360;
   const rotation: "cw" | "ccw" = Math.random() < 0.5 ? "cw" : "ccw";
   const totalFrameCount = cfg.stimuliFrameCount + cfg.maskFrameCount + cfg.fixationFrameCount;
   const trialDuration = Math.ceil((totalFrameCount / cfg.assumedHz) * 1000)
+
+  // random global rotation of the (hidden) triangle each trial
+  const angleDeg = Math.random() * 360;
+  // 3 vertex centers
+  const verts = equilateralVertices(cfg.startX, cfg.startY, cfg.triangleRadius, angleDeg);
+  // Which indices are colored this trial?
+  const coloredIdx = new Set(pickK(3, cfg.nColoredSquares));
+
   timeline.push(
     ...displayStimuli(
       trialID,
       cfg.blockID,
       cfg.practice,
-      calibrationTrial,
+      cfg.calibrationTrial,
       cfg.startX,
       cfg.startY,
       cfg.width,
@@ -55,7 +71,12 @@ export function pushTrial(
       cfg.maskFrameCount,
       totalFrameCount,
       trialDuration,
-      cfg.tile
+      cfg.tile,
+      cfg.nColoredSquares,       
+      cfg.chroma,
+      cfg.lightness,
+      verts,
+      coloredIdx,
     )
   );
 
@@ -65,7 +86,7 @@ export function pushTrial(
       trialID,
       cfg.blockID,
       cfg.practice,
-      calibrationTrial,
+      cfg.calibrationTrial,
       cfg.startX,
       cfg.startY,
       cfg.width,
@@ -77,7 +98,12 @@ export function pushTrial(
       cfg.deg_per_frame,
       cfg.stimuliFrameCount,
       trialDuration,
-      cfg.assumedHz
+      cfg.assumedHz,
+      cfg.chroma,
+      cfg.lightness,
+      verts, 
+      coloredIdx,
+      cfg.nColoredSquares
     )
   );
   timeline.push({
@@ -94,8 +120,8 @@ export function pushTrial(
 );
 }
 
-export function buildBlock(timeline: any[], cfg: BlockConfig, calibrationTrial): void {
+export function buildBlock(timeline: any[], cfg: BlockConfig): void {
   for (let t = 1; t <= cfg.trialsPerBlock; t++) {
-    pushTrial(timeline, cfg, calibrationTrial, t);
+    pushTrial(timeline, cfg, t);
   }
 }

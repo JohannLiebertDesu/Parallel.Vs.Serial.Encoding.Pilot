@@ -9,7 +9,9 @@ export function createColorWheel(
     startY: number,
     outerRadius: number,
     innerRadius: number,
-    offset: number
+    offset: number,
+    lightness: number,
+    chroma: number,
   ): WheelStimulus {
     return {
       category: "customWheel", // Custom category to identify this stimulus
@@ -38,7 +40,7 @@ export function createColorWheel(
             context.arc(cx, cy, stimulus.outerRadius, startAngle, endAngle, false);
             context.arc(cx, cy, stimulus.innerRadius, endAngle, startAngle, true);
             context.closePath();
-            context.fillStyle = colorconversion({ l: 0.6, c: 0.1, h: hue });
+            context.fillStyle = colorconversion({ l: lightness, c: chroma, h: hue });
             context.fill();
         }
       }

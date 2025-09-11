@@ -7,6 +7,7 @@ import psychophysics                       from "@kurokida/jspsych-psychophysics
 import { jsPsych }                         from "../jsp";
 import { createColorWheel}                 from "../task-fun/createWheels";
 import { colorconversion }                 from "../task-fun/colorConversion";
+import type { Vertex } from "../task-fun/triangleHelpers"
 
 const signedDiff360 = (a: number, b: number) => (((a - b + 540) % 360) - 180);
 
@@ -28,8 +29,12 @@ export function featureRecall(
   stimuliFrameCount: number,
   trialDuration: number,
   assumedHz: number,
-  L = 1, 
-  C = 0,
+  lightness: number,
+  chroma: number,
+  verts: ReadonlyArray<Vertex>,
+  coloredIdx: ReadonlySet<number>,
+  nColoredSquares: number,
+
 ): any[] {
 
   const wheelOffset = Math.random() * 360;
@@ -44,11 +49,11 @@ export function featureRecall(
     origin_center: true,
     width: width,
     height: height,
-    line_color: colorconversion({ l: L, c: C, h: 0 }),
-    fill_color: colorconversion({ l: L, c: C, h: 0 }),
+    line_color: colorconversion({ l: 1, c: chroma, h: 0 }),
+    fill_color: colorconversion({ l: 1, c: chroma, h: 0 }),
   };
 
-  const wheel = createColorWheel(startX, startY, wheelOuterRadius, wheelInnerRadius, wheelOffset);
+  const wheel = createColorWheel(startX, startY, wheelOuterRadius, wheelInnerRadius, wheelOffset, lightness, chroma);
 
   const trial: any = {
     type: psychophysics,
@@ -78,7 +83,7 @@ export function featureRecall(
       const hue = (deg + wheelOffset + 360) % 360;
       selectedHue = hue;
 
-      const col = colorconversion({ l: 0.6, c: 0.1, h: hue });
+      const col = colorconversion({ l: lightness, c: chroma, h: hue });
       livePatch.fill_color = col;
       livePatch.line_color = col;
     },
@@ -102,6 +107,7 @@ export function featureRecall(
       data.stimuliMsCount       = Math.round((stimuliFrameCount / assumedHz) * 1000)
       data.total_drift_deg      = dir * (stimuliFrameCount - 1) * deg_per_frame;
       data.rotation             = rotation;
+      data.nColoredSquares      = nColoredSquares;
     },
   };
   return [trial];
