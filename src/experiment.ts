@@ -63,7 +63,8 @@ timeline.push(fullMode_screen)
 // });
 
 buildBlock(timeline, block2);  
-
+  await jsPsych.run(timeline);
+}
 
 
 
@@ -113,5 +114,3 @@ buildBlock(timeline, block2);
   //   },
   // });
   
-  await jsPsych.run(timeline);
-}

@@ -41,21 +41,30 @@ function makeCalibrationTriplet(
   // Which indices are colored this trial?
   const coloredIdx = new Set(pickK(3, cfg.nColoredSquares));
   
+  // (1) one starting hue per square, shared by display & recall
+  const hueStarts = verts.map(() => Math.random() * 360);
+
+  // (2) choose target among colored squares; fallback to any if none colored
+  const choices = coloredIdx.size ? Array.from(coloredIdx) : [0, 1, 2];
+  const targetIdx = choices[Math.floor(Math.random() * choices.length)];
+
   // 1) Sample/mask/fixation with THIS frames level
   const sample = displayStimuli(
     trialID, cfg.blockID, cfg.practice, cfg.calibrationTrial,
     cfg.startX, cfg.startY, cfg.width, cfg.height,
-    initHue, rotation, cfg.deg_per_frame, // (0 for calibration)
+    rotation, cfg.deg_per_frame, // (0 for calibration)
     frames, cfg.maskFrameCount, totalFrameCount, trialDurationMs, 
-    cfg.tile, cfg.nColoredSquares, cfg.chroma, cfg.lightness, verts, coloredIdx)[0];
+    cfg.tile, cfg.nColoredSquares, cfg.chroma, cfg.lightness, verts, 
+    coloredIdx, hueStarts, targetIdx)[0];
 
   // 2) Recall
   const recall = featureRecall(
     trialID, cfg.blockID, cfg.practice, cfg.calibrationTrial,
-    cfg.startX, cfg.startY, cfg.width, cfg.height,
+    cfg.width, cfg.height,
     cfg.wheelOuterRadius, cfg.wheelInnerRadius,
-    initHue, rotation, cfg.deg_per_frame,
-    frames, trialDurationMs, cfg.assumedHz, cfg.lightness, cfg.chroma, verts, coloredIdx, cfg.nColoredSquares)[0];
+    rotation, cfg.deg_per_frame, frames, trialDurationMs, 
+    cfg.assumedHz, cfg.lightness, cfg.chroma, verts, coloredIdx, 
+    cfg.nColoredSquares, hueStarts, targetIdx)[0];
 
   // Wrap recall.on_finish to evaluate correctness + update staircase
   const prevFinish = recall.on_finish;
