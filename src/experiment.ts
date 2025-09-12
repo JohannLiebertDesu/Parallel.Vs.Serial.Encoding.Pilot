@@ -27,10 +27,10 @@ import { survey_screen } from "./ending/questionnaire";
 import { debrief_screen } from "./ending/debriefing";
 import { instructionSlidesConfig } from "./instructions/InstrStart";
 import jsPsychCallFunction from '@jspsych/plugin-call-function';
-import { buildBlock } from "./trials/fullTrial"
+import { buildBlockTimeline } from "./trials/fullTrial"
 import { seedCalibrationBlock } from "./trials/fullCalibrationTrial";
 import psychophysics from "@kurokida/jspsych-psychophysics";
-import {block1, block2 } from "./trials/runExperiment"
+import {block1, block2 } from "./trials/blocks"
 
 
 /**
@@ -52,18 +52,37 @@ var timeline: any[] = [];
 
 timeline.push(fullMode_screen)
 
-// seedCalibrationBlock(timeline, block1, {
-//   maxTrials: 100,
-//   startMs: 80,
-//   errTolDeg: 30,
-//   upStep: 4,
-//   downStep: 1,
-//   minMs: 5,
-//   maxMs: 200,
-// });
+seedCalibrationBlock(
+  timeline,
+  block1,
+  {
+    maxTrials: 100,
+    startMs: 80,
+    errTolDeg: 30,
+    upStep: 4,
+    downStep: 1,
+    minMs: 5,
+    maxMs: 200,
+  },
+  (thrFrames /*, thrMs */) => {
+    // Lock per-participant exposure duration for all subsequent blocks
+    const cfg2 = {
+      ...block2,
+      stimuliFrameCount: Math.max(1, Math.round(thrFrames)),
+      calibrationTrial: false,
+    };
 
-buildBlock(timeline, block2);  
-  await jsPsych.run(timeline);
+    // If you plan more blocks varying nColoredSquares, append them here too.
+    // Example: add three test blocks with 1,2,3 colored squares:
+    // const testBlocks = [1,2,3].map((k,i) => ({ ...cfg2, blockID: 2+i, nColoredSquares: k }));
+    // const tl = testBlocks.flatMap(cfg => buildBlockTimeline(cfg));
+
+    const tl = buildBlockTimeline(cfg2);
+    jsPsych.addNodeToEndOfTimeline({ timeline: tl });
+  }
+);
+
+await jsPsych.run(timeline);
 }
 
 

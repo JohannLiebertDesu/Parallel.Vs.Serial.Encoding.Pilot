@@ -1,135 +1,37 @@
-import { displayStimuli } from "./displayStimuli";
-import { featureRecall } from "./reproductionTrial";
-import { createITI } from "../task-fun/stimuli"
+// fullTrial.ts — build a whole block’s timeline using TrialSpec
 import psychophysics from "@kurokida/jspsych-psychophysics";
-import { equilateralVertices, pickK } from "../task-fun/triangleHelpers";
+import { createITI } from "../task-fun/stimuli";
 
+import { displayStimuli } from "./displayStimuli";
+import { featureRecall }  from "./reproductionTrial";
 
-export interface BlockConfig {
-  /* design factors */
-  startX: number;
-  startY: number;
-  width: number;
-  height: number;
-  deg_per_frame: number;
-  tile: number;
-  stimuliFrameCount: number;
-  maskFrameCount: number;
-  fixationFrameCount: number;
-  assumedHz: number;
+import type { BlockConfig } from "../task-fun/configurations";
+import { makeTrialSpec }   from "../task-fun/configurations"; // ensure this is exported there
 
-  wheelOuterRadius: number;
-  wheelInnerRadius: number;
+export function buildBlockTimeline(cfg: BlockConfig): any[] {
+  const out: any[] = [];
 
-  ITIduration: number;
-  /* meta */
-  blockID: number;          // 1-based
-  practice: boolean;
-  trialsPerBlock: number;   // e.g., 20
-
-  triangleRadius: number,     
-  nColoredSquares: number,     
-
-  chroma: number,
-  lightness: number,
-
-  calibrationTrial: boolean,
-}
-
-/** Pushes one logical trial (= sample then mask; recall later) to `timeline`. */
-export function pushTrial(
-  timeline: any[],
-  cfg: BlockConfig,
-  trialID: number
-): void {
-  const initHue = Math.random() * 360;
-  const rotation: "cw" | "ccw" = Math.random() < 0.5 ? "cw" : "ccw";
-  const totalFrameCount = cfg.stimuliFrameCount + cfg.maskFrameCount + cfg.fixationFrameCount;
-  const trialDuration = Math.ceil((totalFrameCount / cfg.assumedHz) * 1000)
-
-  // 3 vertex centers (random global rotation each trial)
-  const angleDeg = Math.random() * 360;
-  const verts = equilateralVertices(cfg.startX, cfg.startY, cfg.triangleRadius, angleDeg);
-
-  // Which indices are colored this trial?
-  const coloredIdx = new Set(pickK(3, cfg.nColoredSquares));
-
-  // (1) one starting hue per square, shared by display & recall
-  const hueStarts = verts.map(() => Math.random() * 360);
-
-  // (2) choose target among colored squares; fallback to any if none colored
-  const choices = coloredIdx.size ? Array.from(coloredIdx) : [0, 1, 2];
-  const targetIdx = choices[Math.floor(Math.random() * choices.length)];
-
-
-  timeline.push(
-    ...displayStimuli(
-      trialID,
-      cfg.blockID,
-      cfg.practice,
-      cfg.calibrationTrial,
-      cfg.startX,
-      cfg.startY,
-      cfg.width,
-      cfg.height,
-      rotation,
-      cfg.deg_per_frame,
-      cfg.stimuliFrameCount,
-      cfg.maskFrameCount,
-      totalFrameCount,
-      trialDuration,
-      cfg.tile,
-      cfg.nColoredSquares,       
-      cfg.chroma,
-      cfg.lightness,
-      verts,
-      coloredIdx,
-      hueStarts,
-      targetIdx,
-    )
-  );
-
-  // recall trial (separate psychophysics trial)
-  timeline.push(
-    ...featureRecall(
-      trialID,
-      cfg.blockID,
-      cfg.practice,
-      cfg.calibrationTrial,
-      cfg.width,
-      cfg.height,
-      cfg.wheelOuterRadius,
-      cfg.wheelInnerRadius,
-      rotation,
-      cfg.deg_per_frame,
-      cfg.stimuliFrameCount,
-      trialDuration,
-      cfg.assumedHz,
-      cfg.chroma,
-      cfg.lightness,
-      verts, 
-      coloredIdx,
-      cfg.nColoredSquares,
-      hueStarts, 
-      targetIdx,
-    )
-  );
-  timeline.push({
-    type: psychophysics,
-    stimuli: [createITI(cfg.startX, cfg.startY)],
-    response_ends_trial: false,        
-    trial_duration: cfg.ITIduration,
-    data: {
-    trialSegment: "ITI",
-    blockID: cfg.blockID,
-    trialID: trialID, practice: cfg.practice
-    }
-  }
-);
-}
-
-export function buildBlock(timeline: any[], cfg: BlockConfig): void {
   for (let t = 1; t <= cfg.trialsPerBlock; t++) {
-    pushTrial(timeline, cfg, t);
+    const spec = makeTrialSpec(cfg);                // one source of per-trial randomness
+    const frames = cfg.stimuliFrameCount;           // fixed (or set from calibration)
+
+    out.push(
+      ...displayStimuli({ trialID: t, cfg, spec, stimuliFrameCount: frames }),
+      ...featureRecall ({ trialID: t, cfg, spec, stimuliFrameCount: frames }),
+      {
+        type: psychophysics,
+        stimuli: [createITI(cfg.startX, cfg.startY)],
+        response_ends_trial: false,
+        trial_duration: cfg.ITIduration,
+        data: {
+          trialSegment: "ITI",
+          blockID: cfg.blockID,
+          trialID: t,
+          practice: cfg.practice
+        }
+      }
+    );
   }
+
+  return out;
 }

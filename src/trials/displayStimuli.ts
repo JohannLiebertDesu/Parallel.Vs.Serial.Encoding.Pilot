@@ -1,50 +1,37 @@
-/* displayStimuli.ts – run-time stimulus generation */
+/* displayStimuli.ts – run-time stimulus generation (lean) */
 import psychophysics from "@kurokida/jspsych-psychophysics";
 import { createRectObject, createCrossDuringSample, createStaticTileMaskManual, createFixationWindow } from "../task-fun/stimuli";
-import type { Vertex } from "../task-fun/triangleHelpers"
+import type { BlockConfig } from "../task-fun/configurations";
+import type { TrialSpec }  from "../task-fun/configurations";
 
-export function displayStimuli(
-  trialID: number,
-  blockID: number,
-  practice: boolean,
-  calibrationTrial: boolean,
-  startX: number,
-  startY: number,
-  width: number,
-  height: number,
-  rotation: "cw" | "ccw",
-  deg_per_frame: number,
-  stimuliFrameCount: number,
-  maskFrameCount: number,
-  totalFrameCount: number,
-  trialDuration: number,
-  tile: number,
-  nColoredSquares: number,                // NEW (0..3)
-  chroma: number,
-  lightness: number,
-  verts: ReadonlyArray<Vertex>,
-  coloredIdx: ReadonlySet<number>,
-  hueStarts: ReadonlyArray<number>,
-  targetIdx: number,
+type Args = {
+  trialID: number;
+  cfg: BlockConfig;
+  spec: TrialSpec;
+  stimuliFrameCount: number;   // per-trial exposure (calib or fixed)
+};
 
-): any[] {
+/** Single, lean entry: build sample trial from cfg + spec + frames */
+export function displayStimuli({ trialID, cfg, spec, stimuliFrameCount }: Args): any[] {
+  const totalFrameCount = stimuliFrameCount + cfg.maskFrameCount + cfg.fixationFrameCount;
+  const trialDuration   = Math.ceil((totalFrameCount / cfg.assumedHz) * 1000);
 
-  // build 3 squares (colored or outline), each with its own random starting hue
-  const squares = verts.map((p, i) => {
-    const colored = coloredIdx.has(i);
-    const initHue = hueStarts[i];
+  // build 3 squares (colored or outline), each with its own starting hue
+  const squares = spec.verts.map((p, i) => {
+    const colored = spec.coloredIdx.has(i);
+    const initHue = spec.hueStarts[i];
     return createRectObject(
-      p.x, p.y, initHue, width, height,
-      rotation, deg_per_frame, lightness, chroma, stimuliFrameCount,
-      colored ? 'colored' : 'outline'
+      p.x, p.y, initHue, cfg.width, cfg.height,
+      spec.rotation, cfg.deg_per_frame, cfg.lightness, cfg.chroma, stimuliFrameCount,
+      colored ? "colored" : "outline"
     );
   });
 
   // localized masks for each square
-  const masks = verts.map(p =>
+  const masks = spec.verts.map(p =>
     createStaticTileMaskManual(
-      p.x, p.y, width, height, tile, lightness, chroma,
-      stimuliFrameCount, maskFrameCount
+      p.x, p.y, cfg.width, cfg.height, cfg.tile, cfg.lightness, cfg.chroma,
+      stimuliFrameCount, cfg.maskFrameCount
     )
   );
 
@@ -53,24 +40,30 @@ export function displayStimuli(
     stimuli: [
       ...squares,
       ...masks,
-      createCrossDuringSample(startX, startY, stimuliFrameCount, maskFrameCount),
-      createFixationWindow(startX, startY, stimuliFrameCount, maskFrameCount, totalFrameCount)
+      createCrossDuringSample(cfg.startX, cfg.startY, stimuliFrameCount, cfg.maskFrameCount),
+      createFixationWindow(cfg.startX, cfg.startY, stimuliFrameCount, cfg.maskFrameCount, totalFrameCount),
     ],
     choices: "NO_KEYS",
     trial_duration: trialDuration,
     data: {
-      trialID, blockID, practice,
-      calibrationTrial,
       trialSegment: "stimuliPresentation",
-      deg_per_frame,
+      // minimal & useful audit trail; drop heavy arrays like verts/hueStarts to keep data slim
+      trialID,
+      blockID:          cfg.blockID,
+      practice:         cfg.practice,
+      calibrationTrial: cfg.calibrationTrial,
+      rotation:         spec.rotation,
+      deg_per_frame:    cfg.deg_per_frame,
       stimuliFrameCount,
-      rotation,
+      maskFrameCount:   cfg.maskFrameCount,
+      fixationFrameCount: cfg.fixationFrameCount,
       trialDuration,
-      nColoredSquares,
-      verts,
-      coloredIdx: Array.from(coloredIdx),
-      hueStarts,
-      targetIdx: targetIdx,
+      nColoredSquares:  spec.coloredIdx.size,
+      coloredIdx:       Array.from(spec.coloredIdx),
+      targetIdx:        spec.targetIdx,
+
+      verts: spec.verts,
+      hueStarts: spec.hueStarts,
     }
   };
 

@@ -10,22 +10,50 @@ import { setCSS } from "./task-fun/setCSS";
 
 setCSS();
 
+export const SETTINGS = {
+  chroma: 0.1,            // Color saturation for stimuli (passed to colorconversion as 'c').
+  lightness: 0.7,         // Perceptual lightness for stimuli (passed as 'l').
+
+  assumedHz: 60,          // Display refresh rate used to convert seconds ↔ frames.
+                          // If you measure a participant's actual Hz, override this.
+
+  fixationSec: 0.5,       // Duration of fixation BEFORE/AROUND the sample+mask, in seconds.
+  maskSec: 0.05,          // Duration of the post-sample mask, in seconds.
+
+  width: 250,             // Width  of each stimulus rectangle (px).
+  height: 250,            // Height of each stimulus rectangle (px).
+
+  wheelOuterRadius: 300,  // Outer radius of the color wheel used at recall (px).
+  wheelInnerRadius: 200,  // Inner radius (defines ring thickness and inner hole).
+
+  ITIdurationMs: 2000,    // Inter-trial interval (ms) with fixation only.
+
+  tile: 4,                // Mask tile size (px). Smaller → higher spatial frequency noise.
+  triangleRadius: 225,    // Distance from display center to each of the 3 square centers (px).
+
+  startX: 0,              // Display center X in plugin coordinates (0,0 ≈ canvas center when origin_center=true).
+  startY: 0,              // Display center Y.
+
+  degSteps: [0, 5, 10, 15] as const, // Allowed per-frame hue drift steps (deg/frame).
+                                     // 0 is typical for calibration (no drift); >0 adds motion/difficulty.
+} as const;
+
+// DERIVED: timing in frames computed from SETTINGS.
+export const DERIVED = {
+  fixationFrames: Math.ceil(SETTINGS.assumedHz * SETTINGS.fixationSec), // frames of fixation
+  maskFrames:     Math.ceil(SETTINGS.assumedHz * SETTINGS.maskSec),     // frames of mask
+} as const;
+
+
+
+
 export const expInfo = {
   // settings for the experiment
   TITLE: "Parallel.Vs.Serial.Encoding.pilot",
   LANG: "en", // the default language of the experiment
 
-  // design of the experiment
-  DESIGN: {
-    nTRIALS: 96, // number of experiment trials for each condition
-    nBLOCKS: 2, // number of blocks
-  },
-
-  // settings for each trial
-  TIMING: {
-    START: 10 * 1000, // time for the countdown before a new trial starts
-    BREAK: 30, // break duration in seconds
-  },
+  SETTINGS,
+  DERIVED,
 
   // when using Prolific, you can set customized completion codes for different situations
   // e.g., when participants complete the experiment, or when they fail the attention check
